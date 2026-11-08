@@ -1,0 +1,2892 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Srpska filmska baza — filmovi, serije, glumci</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Playfair+Display:ital,wght@0,400;0,700;0,800;0,900;1,400;1,700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --paper:#f2ebdc; --paper-2:#e9e0cd; --paper-3:#dcd0b8;
+  --ink:#191510; --ink-2:#4a4136; --ink-3:#776c5b;
+  --rule:#cdc1a8; --rule-dark:#a89a7d;
+  /* Serbian flag palette */
+  --red:#C6363C; --red-2:#D84349;
+  --blue:#0C4076; --blue-2:#0E4C8C;
+  --flag-white:#F8F4EB;
+  --green:#4c6b39;
+  --font-display:'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-body:'Lora', Georgia, 'Times New Roman', serif;
+  --font-mono:'IBM Plex Mono', 'Courier New', monospace;
+}
+*,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
+html{ scroll-behavior:smooth; }
+body{
+  font-family:var(--font-body); font-size:16px; color:var(--ink);
+  background-color:var(--paper);
+  background-image:
+    repeating-linear-gradient(0deg, rgba(70,50,20,.018) 0 1px, transparent 1px 3px),
+    radial-gradient(circle at 18% 6%, rgba(190,150,80,.16), transparent 52%),
+    radial-gradient(circle at 88% 92%, rgba(120,60,40,.09), transparent 48%);
+  background-attachment:fixed;
+  line-height:1.55; min-height:100vh; -webkit-font-smoothing:antialiased;
+}
+
+/* Top tricolor bar — subtle Serbian flag reference */
+body::before{
+  content:'';
+  position:fixed;
+  top:0; left:0; right:0;
+  height:3px;
+  background: linear-gradient(to bottom,
+    var(--red) 0 1px,
+    var(--blue) 1px 2px,
+    var(--flag-white) 2px 3px);
+  z-index:1000;
+  pointer-events:none;
+}
+
+a{ color:inherit; text-decoration:none; }
+button,input,select,textarea{ font:inherit; color:inherit; }
+img{ display:block; max-width:100%; }
+::selection{ background:var(--ink); color:var(--paper); }
+::-webkit-scrollbar{ width:12px; height:12px; }
+::-webkit-scrollbar-track{ background:var(--paper-2); }
+::-webkit-scrollbar-thumb{ background:var(--rule-dark); border:3px solid var(--paper-2); }
+
+/* ---------- Masthead ---------- */
+.masthead{ max-width:1240px; margin:0 auto; padding:0 28px; }
+.masthead-top{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:18px; flex-wrap:wrap; padding:14px 0 10px;
+  border-bottom:1px solid var(--rule);
+  font-family:var(--font-mono); font-size:9.5px;
+  letter-spacing:.2em; text-transform:uppercase; color:var(--ink-3);
+}
+.mh-right{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.logo{
+  font-family:var(--font-display); font-weight:900;
+  font-size:clamp(34px,7.4vw,82px); line-height:.9;
+  letter-spacing:-.025em; text-transform:uppercase;
+  text-align:center; padding:22px 0 6px;
+}
+.logo em{
+  font-style:italic; font-weight:400;
+  color:var(--red);
+  /* subtle blue misregistration — flag hint */
+  text-shadow: 2px 2px 0 rgba(12, 64, 118, 0.35);
+}
+.tagline{
+  text-align:center; font-family:var(--font-mono); font-size:9.5px;
+  letter-spacing:.46em; text-transform:uppercase; color:var(--ink-2);
+  padding-bottom:16px;
+}
+.tagline .t-red{ color:var(--red); }
+.tagline .t-blue{ color:var(--blue); }
+.tagline .t-ink{ color:var(--ink-2); }
+.tagline .t-sep{ color:var(--ink-3); }
+.mainnav{
+  display:flex; flex-wrap:wrap; justify-content:center;
+  border-top:2px solid var(--ink); border-bottom:2px solid var(--ink);
+}
+.mainnav a{
+  font-family:var(--font-mono); font-size:10.5px;
+  letter-spacing:.18em; text-transform:uppercase;
+  padding:12px 18px; border-right:1px solid var(--rule);
+  transition:background .12s ease, color .12s ease;
+}
+.mainnav a:last-child{ border-right:none; }
+.mainnav a:hover{ background:var(--ink); color:var(--paper); }
+.mainnav a.is-active{ background:var(--red); color:#fdf6e9; }
+.searchband{
+  display:flex; align-items:center; gap:12px;
+  border-bottom:1px solid var(--ink); padding:9px 2px;
+}
+.searchband .sb-mark{
+  font-family:var(--font-mono); font-size:9.5px;
+  letter-spacing:.2em; text-transform:uppercase; color:var(--red);
+  flex-shrink:0;
+}
+.searchband input{
+  flex:1; border:none; background:transparent; outline:none;
+  font-family:var(--font-body); font-size:15px; font-style:italic;
+  color:var(--ink); padding:3px 0; border-bottom:1px solid transparent;
+}
+.searchband input::placeholder{ color:var(--ink-3); }
+.searchband input:focus{ border-bottom-color:var(--rule-dark); }
+.searchband .sb-go{
+  border:1px solid var(--ink); background:var(--paper);
+  width:28px; height:26px; display:grid; place-items:center;
+  cursor:pointer; font-size:13px; line-height:1;
+  transition:background .12s ease, color .12s ease;
+}
+.searchband .sb-go:hover{ background:var(--ink); color:var(--paper); }
+
+.container{ max-width:1240px; margin:0 auto; padding:8px 28px 90px; }
+
+.page-head{
+  display:flex; align-items:flex-end; justify-content:space-between;
+  gap:20px; flex-wrap:wrap;
+  border-bottom:2px solid var(--ink);
+  padding:34px 0 14px; margin-bottom:28px;
+  position:relative;
+}
+/* tricolor underline — flag motif under every page heading */
+.page-head::after{
+  content:'';
+  position:absolute;
+  left:0; right:0; bottom:-4px;
+  height:2px;
+  background: linear-gradient(to right,
+    var(--red) 0 33.33%,
+    var(--flag-white) 33.33% 66.66%,
+    var(--blue) 66.66% 100%);
+  pointer-events:none;
+}
+.page-head h1{
+  font-family:var(--font-display);
+  font-size:clamp(28px,4.4vw,46px);
+  font-weight:800; letter-spacing:-.02em; line-height:1.02;
+}
+.page-head .sub{
+  font-family:var(--font-mono); font-size:10px;
+  letter-spacing:.18em; text-transform:uppercase;
+  color:var(--ink-3); margin-top:8px;
+}
+.page-head .sub b{ color:var(--red); }
+
+.kicker{
+  font-family:var(--font-mono); font-size:9.5px;
+  letter-spacing:.24em; text-transform:uppercase;
+  color:var(--red); margin-bottom:8px;
+}
+.lede{ font-size:15px; line-height:1.7; color:var(--ink-2); max-width:64ch; }
+
+.sec-head{
+  display:flex; align-items:baseline; gap:14px;
+  border-bottom:2px solid var(--ink);
+  padding-bottom:8px; margin:50px 0 24px;
+}
+.sec-num{
+  font-family:var(--font-mono); font-size:10px;
+  letter-spacing:.18em; color:var(--red); flex-shrink:0;
+}
+.sec-head h2{
+  font-family:var(--font-display);
+  font-size:clamp(21px,2.9vw,30px);
+  font-weight:700; letter-spacing:-.015em;
+  line-height:1; flex-shrink:0;
+}
+/* subtle red→blue gradient on the section rule */
+.sec-line{
+  flex:1; height:1px;
+  background: linear-gradient(90deg,
+    rgba(198, 54, 60, 0.55) 0%,
+    rgba(12, 64, 118, 0.45) 100%);
+  align-self:center; min-width:20px;
+}
+.sec-meta{
+  font-family:var(--font-mono); font-size:9.5px;
+  letter-spacing:.16em; text-transform:uppercase;
+  color:var(--ink-3); flex-shrink:0;
+}
+
+/* ---------- Buttons ---------- */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  font-family:var(--font-mono); font-size:10px;
+  letter-spacing:.16em; text-transform:uppercase; line-height:1;
+  padding:10px 15px; border:2px solid var(--ink); background:var(--paper);
+  color:var(--ink); box-shadow:3px 3px 0 var(--ink); cursor:pointer;
+  transition:transform .1s ease, box-shadow .1s ease, background .12s ease, color .12s ease;
+  user-select:none; white-space:nowrap;
+}
+.btn:hover{ transform:translate(-1px,-1px); box-shadow:5px 5px 0 var(--ink); }
+.btn:active{ transform:translate(3px,3px); box-shadow:0 0 0 var(--ink); }
+.btn:disabled{ opacity:.55; cursor:not-allowed; transform:none; box-shadow:3px 3px 0 var(--ink); }
+.btn.solid{ background:var(--red); color:#fdf6e9; }
+.btn.solid:hover{ background:var(--red-2); }
+.btn.ink{ background:var(--ink); color:var(--paper); }
+.btn.blue{ background:var(--blue); color:#f3f6fa; }
+.btn.blue:hover{ background:var(--blue-2); }
+.btn.outline-red{ border-color:var(--red); color:var(--red); box-shadow:3px 3px 0 var(--red); }
+.btn.tiny{
+  padding:6px 10px; font-size:9px; letter-spacing:.14em;
+  border-width:1px; box-shadow:2px 2px 0 var(--ink);
+}
+.btn.tiny:hover{ transform:translate(-1px,-1px); box-shadow:3px 3px 0 var(--ink); }
+.btn.bare{
+  border-color:transparent; background:transparent; box-shadow:none;
+  padding:4px 8px; color:var(--ink-2);
+}
+.btn.bare:hover{ background:var(--ink); color:var(--paper); transform:none; box-shadow:none; }
+.btn-row{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+
+/* ---------- Forms ---------- */
+.field{ display:block; margin-bottom:20px; }
+.field > .lab{
+  display:block; font-family:var(--font-mono); font-size:9px;
+  letter-spacing:.2em; text-transform:uppercase;
+  color:var(--ink-3); margin-bottom:5px;
+}
+.inp, .sel, .area{
+  width:100%; background:transparent; border:none;
+  border-bottom:2px solid var(--ink);
+  padding:7px 2px; outline:none; font-family:var(--font-body);
+  font-size:15px; color:var(--ink);
+  transition:border-color .12s ease, background .12s ease;
+}
+.inp:focus, .sel:focus, .area:focus{
+  border-bottom-color:var(--red); background:rgba(255,255,255,.35);
+}
+.area{ resize:vertical; min-height:88px; line-height:1.55; font-size:14px; }
+.sel{ cursor:pointer; appearance:none; padding-right:18px; }
+.sel option{ background:var(--paper); color:var(--ink); }
+.hint{
+  font-family:var(--font-mono); font-size:9px;
+  letter-spacing:.08em; color:var(--ink-3);
+  margin-top:6px; text-transform:uppercase;
+}
+.row-2{ display:grid; grid-template-columns:1fr 1fr; gap:22px; }
+.row-3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:22px; }
+
+/* ---------- Image picker ---------- */
+.img-field{ margin-bottom:22px; }
+.img-field > .lab{
+  display:block; font-family:var(--font-mono); font-size:9px;
+  letter-spacing:.2em; text-transform:uppercase;
+  color:var(--ink-3); margin-bottom:8px;
+}
+.img-picker{ display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap; }
+.img-preview{
+  width:100px; height:150px; border:2px solid var(--ink);
+  background:var(--paper-2) center/cover; box-shadow:3px 3px 0 var(--ink);
+  flex-shrink:0; position:relative;
+}
+.img-preview::after{
+  content:"bez slike"; position:absolute; inset:0;
+  display:grid; place-items:center; font-family:var(--font-mono);
+  font-size:8px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--ink-3);
+}
+.img-preview.has-img::after{ display:none; }
+.img-picker-actions{ display:flex; flex-direction:column; gap:8px; flex:1 1 200px; }
+.img-picker-actions .hint{ margin-top:0; }
+
+/* ---------- Cast editor ---------- */
+.cast-editor{ display:flex; flex-direction:column; gap:8px; }
+.cast-item{
+  display:grid; grid-template-columns: 1.4fr 1fr 1fr 32px;
+  gap:8px; align-items:center;
+  padding:8px; border:1px solid var(--rule);
+  background:rgba(255,255,255,.3);
+}
+.cast-item .inp, .cast-item .sel{ font-size:13px; padding:4px 2px; }
+.cast-item .btn.bare{ padding:4px; }
+
+/* ---------- Seasons editor ---------- */
+.seasons-editor{ display:flex; flex-direction:column; gap:12px; }
+.season-block{
+  border:1px solid var(--rule-dark); padding:10px;
+  background:rgba(255,255,255,.3);
+}
+.season-head{
+  display:flex; align-items:center; gap:10px;
+  padding-bottom:8px; margin-bottom:8px;
+  border-bottom:1px dashed var(--rule);
+}
+.season-head .season-label{
+  font-family:var(--font-mono); font-size:9px;
+  letter-spacing:.18em; text-transform:uppercase;
+  color:var(--ink-2);
+}
+.season-head .season-num{
+  width:60px; padding:3px 6px; border:1px solid var(--ink);
+  background:var(--paper); font-family:var(--font-mono); font-size:12px;
+}
+.season-head .spacer{ flex:1; }
+.episodes-list{ display:flex; flex-direction:column; gap:6px; margin-bottom:8px; }
+.episode-row{
+  display:grid; grid-template-columns: 44px 1fr 2fr 130px 28px;
+  gap:6px; align-items:center;
+}
+.episode-row .ep-num{
+  width:100%; padding:3px 6px; border:1px solid var(--ink);
+  background:var(--paper); font-family:var(--font-mono); font-size:11px;
+  text-align:center;
+}
+.episode-row .ep-title, .episode-row .ep-airdate{
+  width:100%; padding:3px 6px; border:1px solid var(--ink);
+  background:var(--paper); font-size:12px; font-family:var(--font-body);
+}
+.episode-row .ep-airdate{ font-family:var(--font-mono); font-size:11px; }
+.episode-row .btn.bare{ padding:2px; }
+
+/* ---------- Filters ---------- */
+.filters{
+  display:flex; gap:26px; flex-wrap:wrap; align-items:flex-end;
+  border-top:2px solid var(--ink); border-bottom:1px solid var(--rule);
+  padding:14px 0 12px; margin-bottom:30px;
+}
+.filters .f-field{ flex:1 1 170px; min-width:140px; }
+.filters .f-field.wide{ flex:2 1 260px; }
+.filters .f-field .lab{
+  display:block; font-family:var(--font-mono); font-size:8.5px;
+  letter-spacing:.22em; text-transform:uppercase;
+  color:var(--ink-3); margin-bottom:4px;
+}
+.filters .inp, .filters .sel{ border-bottom-width:1px; font-size:14px; padding:4px 0; }
+
+/* ---------- Grid / Cards ---------- */
+.grid{
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(196px, 1fr));
+  gap:30px 22px;
+}
+.grid.people{
+  grid-template-columns:repeat(auto-fill, minmax(168px, 1fr));
+  gap:28px 20px;
+}
+.tcard{
+  display:flex; flex-direction:column;
+  border:2px solid var(--ink); background:var(--paper);
+  box-shadow:4px 4px 0 var(--ink);
+  transition:transform .13s ease, box-shadow .13s ease;
+}
+.tcard:hover{ transform:translate(-2px,-2px); box-shadow:8px 8px 0 var(--ink); }
+.tcard:active{ transform:translate(2px,2px); box-shadow:1px 1px 0 var(--ink); }
+.tcard-poster{
+  position:relative; aspect-ratio:2/3; display:grid; place-items:center;
+  overflow:hidden; border-bottom:2px solid var(--ink);
+  background:
+    linear-gradient(158deg,
+      hsl(var(--h) 44% 44%) 0%,
+      hsl(var(--h) 52% 26%) 55%,
+      hsl(var(--h) 60% 15%) 100%) center/cover;
+}
+.tcard-poster::after{
+  content:""; position:absolute; inset:0;
+  background-image:radial-gradient(rgba(0,0,0,.4) 1px, transparent 1.3px);
+  background-size:4px 4px; opacity:.5; mix-blend-mode:multiply;
+  pointer-events:none;
+}
+.tcard-poster.has-image::after{ opacity:0; }
+.tcard-poster.has-image .ini{ display:none; }
+.tcard-poster .ini{
+  position:relative; z-index:1; font-family:var(--font-display);
+  font-weight:900; font-size:3.1rem; letter-spacing:-.02em;
+  line-height:1; color:#f7f0e1;
+  text-shadow:2px 2px 0 rgba(0,0,0,.35);
+  text-align:center; padding:0 8px;
+}
+.stamp{
+  position:absolute; top:8px; left:8px; z-index:2;
+  font-family:var(--font-mono); font-size:8.5px;
+  letter-spacing:.16em; text-transform:uppercase;
+  padding:2px 6px; background:var(--paper);
+  color:var(--ink); border:1px solid var(--ink);
+  transform:rotate(-3deg);
+}
+.stamp.series{ background:var(--blue); color:#eef3f8; border-color:var(--blue); }
+.tcard-body{ padding:11px 11px 13px; display:flex; flex-direction:column; gap:3px; flex:1; }
+.tcard-body h3{
+  font-family:var(--font-display); font-size:15px;
+  font-weight:700; line-height:1.18; letter-spacing:-.005em;
+}
+.tcard-year{
+  font-family:var(--font-mono); font-size:9.5px;
+  letter-spacing:.12em; color:var(--ink-3); text-transform:uppercase;
+}
+.tcard-genres{
+  font-size:12.5px; font-style:italic;
+  color:var(--ink-2); line-height:1.35;
+}
+.tcard-rating{
+  margin-top:auto; padding-top:7px;
+  font-family:var(--font-mono); font-size:10.5px;
+  letter-spacing:.1em; color:var(--red);
+}
+
+.pcard{ display:flex; flex-direction:column; gap:9px; transition:transform .13s ease; }
+.pcard:hover{ transform:translateY(-3px); }
+.pcard-portrait{
+  position:relative; aspect-ratio:1/1;
+  display:grid; place-items:center;
+  border:2px solid var(--ink);
+  background:
+    linear-gradient(150deg,
+      hsl(var(--h) 34% 52%) 0%,
+      hsl(var(--h) 38% 32%) 60%,
+      hsl(var(--h) 42% 22%) 100%) center/cover;
+  box-shadow:4px 4px 0 var(--ink); overflow:hidden;
+  transition:box-shadow .13s ease;
+}
+.pcard:hover .pcard-portrait{ box-shadow:7px 7px 0 var(--ink); }
+.pcard-portrait::after{
+  content:""; position:absolute; inset:0;
+  background-image:radial-gradient(rgba(0,0,0,.35) 1px, transparent 1.2px);
+  background-size:5px 5px; opacity:.45; mix-blend-mode:multiply;
+  pointer-events:none;
+}
+.pcard-portrait.has-image::after{ opacity:0; }
+.pcard-portrait.has-image span{ display:none; }
+.pcard-portrait span{
+  position:relative; z-index:1; font-family:var(--font-display);
+  font-size:2rem; font-weight:900; letter-spacing:-.02em;
+  color:#f7f0e1; text-shadow:2px 2px 0 rgba(0,0,0,.3);
+}
+.pcard-name{
+  font-family:var(--font-display); font-size:15px;
+  font-weight:700; line-height:1.2;
+}
+.pcard-meta{
+  font-family:var(--font-mono); font-size:9px;
+  letter-spacing:.12em; text-transform:uppercase;
+  color:var(--ink-3);
+}
+.pcard-count{
+  font-family:var(--font-mono); font-size:9px;
+  letter-spacing:.12em; text-transform:uppercase;
+  color:var(--red); border-top:1px solid var(--rule);
+  padding-top:6px;
+}
+
+/* ---------- Home lead ---------- */
+.lead{
+  display:grid; grid-template-columns:1.55fr 1fr;
+  gap:0; border-bottom:1px solid var(--rule);
+  padding-bottom:34px;
+}
+.lead-main{
+  display:grid; grid-template-columns:186px 1fr;
+  gap:26px; padding-right:38px;
+}
+.lead-poster{
+  position:relative; aspect-ratio:2/3;
+  border:2px solid var(--ink); box-shadow:6px 6px 0 var(--ink);
+  display:grid; place-items:center; overflow:hidden;
+  background:linear-gradient(158deg, hsl(var(--h) 44% 42%), hsl(var(--h) 58% 14%)) center/cover;
+}
+.lead-poster::after{
+  content:""; position:absolute; inset:0;
+  background-image:radial-gradient(rgba(0,0,0,.42) 1px, transparent 1.3px);
+  background-size:4px 4px; opacity:.55; mix-blend-mode:multiply;
+  pointer-events:none;
+}
+.lead-poster.has-image::after{ opacity:0; }
+.lead-poster.has-image span{ display:none; }
+.lead-poster span{
+  position:relative; z-index:1; font-family:var(--font-display);
+  font-size:3rem; font-weight:900; color:#f7f0e1;
+  text-shadow:2px 2px 0 rgba(0,0,0,.35);
+}
+.lead-copy h2{
+  font-family:var(--font-display);
+  font-size:clamp(26px,3.6vw,42px); font-weight:800;
+  line-height:1.03; letter-spacing:-.02em; margin-bottom:8px;
+}
+.lead-meta{
+  font-family:var(--font-mono); font-size:9.5px;
+  letter-spacing:.16em; text-transform:uppercase;
+  color:var(--ink-3); padding-bottom:12px;
+  margin-bottom:12px; border-bottom:1px solid var(--rule);
+}
+.lead-copy .lede{ margin-bottom:18px; }
+.lead-side{ border-left:1px solid var(--rule); padding-left:34px; }
+.side-title{
+  font-family:var(--font-mono); font-size:9.5px;
+  letter-spacing:.24em; text-transform:uppercase;
+  color:var(--red); border-bottom:2px solid var(--ink);
+  padding-bottom:8px; margin-bottom:6px;
+}
+.side-list{ list-style:none; }
+.side-list li a{
+  display:grid; grid-template-columns:26px 1fr auto;
+  gap:10px; align-items:baseline; padding:10px 0;
+  border-bottom:1px dotted var(--rule-dark);
+  transition:padding-left .12s ease, color .12s ease;
+}
+.side-list li a:hover{ padding-left:5px; color:var(--red); }
+.sl-num{ font-family:var(--font-mono); font-size:9px; color:var(--ink-3); letter-spacing:.1em; }
+.sl-title{ font-family:var(--font-display); font-size:15px; font-weight:600; line-height:1.2; }
+.sl-year{ font-family:var(--font-mono); font-size:9px; color:var(--ink-3); letter-spacing:.1em; }
+
+.numbers{
+  display:flex; flex-wrap:wrap;
+  border-bottom:2px solid var(--ink); margin-bottom:10px;
+}
+.num{ flex:1 1 130px; padding:18px 20px 16px; border-right:1px solid var(--rule); }
+.num:last-child{ border-right:none; }
+.num b{
+  display:block; font-family:var(--font-display);
+  font-size:34px; font-weight:900; line-height:1; letter-spacing:-.02em;
+}
+.num span{
+  display:block; font-family:var(--font-mono); font-size:8.5px;
+  letter-spacing:.2em; text-transform:uppercase;
+  color:var(--ink-3); margin-top:7px;
+}
+
+/* ---------- Title detail ---------- */
+.title-hero{
+  display:grid; grid-template-columns:232px 1fr;
+  gap:40px; border-bottom:3px double var(--ink);
+  padding:34px 0 32px;
+}
+.th-poster{
+  position:relative; aspect-ratio:2/3;
+  border:2px solid var(--ink); box-shadow:7px 7px 0 var(--ink);
+  display:grid; place-items:center; overflow:hidden;
+  background:linear-gradient(158deg, hsl(var(--h) 44% 42%), hsl(var(--h) 58% 14%)) center/cover;
+}
+.th-poster::after{
+  content:""; position:absolute; inset:0;
+  background-image:radial-gradient(rgba(0,0,0,.42) 1px, transparent 1.3px);
+  background-size:4px 4px; opacity:.55; mix-blend-mode:multiply;
+  pointer-events:none;
+}
+.th-poster.has-image::after{ opacity:0; }
+.th-poster.has-image span{ display:none; }
+.th-poster span{
+  position:relative; z-index:1; font-family:var(--font-display);
+  font-size:3.4rem; font-weight:900; color:#f7f0e1;
+  text-shadow:2px 2px 0 rgba(0,0,0,.35);
+  text-align:center; padding:0 8px;
+}
+.th-body h1{
+  font-family:var(--font-display);
+  font-size:clamp(28px,4.6vw,50px); font-weight:800;
+  line-height:1.02; letter-spacing:-.025em; margin-bottom:10px;
+}
+.genre-line{
+  font-family:var(--font-mono); font-size:9.5px;
+  letter-spacing:.18em; text-transform:uppercase;
+  color:var(--red); padding-bottom:14px;
+  margin-bottom:16px; border-bottom:1px solid var(--rule);
+}
+.facts{
+  display:flex; flex-wrap:wrap; gap:0 34px;
+  margin:18px 0 22px;
+}
+.fact{
+  display:flex; align-items:baseline; gap:10px;
+  border-bottom:1px dotted var(--rule-dark);
+  padding:6px 0; min-width:172px;
+}
+.fact dt{
+  font-family:var(--font-mono); font-size:8.5px;
+  letter-spacing:.16em; text-transform:uppercase;
+  color:var(--ink-3); white-space:nowrap;
+}
+.fact dd{ font-family:var(--font-body); font-size:14px; font-weight:600; color:var(--ink); }
+
+/* ---------- Person detail ---------- */
+.profile{
+  display:grid; grid-template-columns:178px 1fr;
+  gap:40px; border-bottom:3px double var(--ink);
+  padding:34px 0 32px;
+}
+.profile-portrait{
+  position:relative; aspect-ratio:1/1;
+  border:2px solid var(--ink); box-shadow:7px 7px 0 var(--ink);
+  display:grid; place-items:center; overflow:hidden;
+  background:linear-gradient(150deg, hsl(var(--h) 34% 52%), hsl(var(--h) 42% 22%)) center/cover;
+}
+.profile-portrait::after{
+  content:""; position:absolute; inset:0;
+  background-image:radial-gradient(rgba(0,0,0,.35) 1px, transparent 1.2px);
+  background-size:5px 5px; opacity:.45; mix-blend-mode:multiply;
+  pointer-events:none;
+}
+.profile-portrait.has-image::after{ opacity:0; }
+.profile-portrait.has-image span{ display:none; }
+.profile-portrait span{
+  position:relative; z-index:1; font-family:var(--font-display);
+  font-size:3.2rem; font-weight:900; color:#f7f0e1;
+  text-shadow:2px 2px 0 rgba(0,0,0,.3);
+}
+.profile-body h1{
+  font-family:var(--font-display);
+  font-size:clamp(26px,4.2vw,44px); font-weight:800;
+  line-height:1.04; letter-spacing:-.02em; margin-bottom:12px;
+}
+.occ-chips{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; }
+.occ-chip{
+  font-family:var(--font-mono); font-size:9px;
+  letter-spacing:.14em; text-transform:uppercase;
+  padding:4px 10px; border:1px solid var(--ink);
+  background:var(--paper); color:var(--ink);
+}
+.occ-chip.accent{ background:var(--ink); color:var(--paper); }
+
+/* ---------- Rows ---------- */
+.rows{ border-top:1px solid var(--rule); }
+.credit-row{
+  display:grid; grid-template-columns:62px 1fr auto;
+  gap:18px; align-items:baseline; padding:13px 2px;
+  border-bottom:1px solid var(--rule);
+  transition:background .12s ease;
+}
+.credit-row:hover{ background:rgba(255,255,255,.35); }
+.cr-year{
+  font-family:var(--font-mono); font-size:10px;
+  letter-spacing:.12em; color:var(--ink-3);
+}
+.cr-main a{
+  font-family:var(--font-display); font-size:17px; font-weight:700;
+  line-height:1.2; border-bottom:1px solid transparent;
+  transition:border-color .12s ease, color .12s ease;
+}
+.cr-main a:hover{ color:var(--red); border-bottom-color:var(--red); }
+.cr-char{
+  display:block; font-size:13px; font-style:italic;
+  color:var(--ink-2); margin-top:2px;
+}
+.cr-char b{ font-style:normal; font-weight:600; }
+.rstamp{
+  font-family:var(--font-mono); font-size:8.5px;
+  letter-spacing:.14em; text-transform:uppercase;
+  padding:3px 8px; border:1px solid var(--rule-dark);
+  color:var(--ink-2); white-space:nowrap; display:inline-block;
+}
+.rstamp.main{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
+.rstamp.epi{ border-style:dashed; }
+
+.cast-row{
+  display:grid; grid-template-columns:52px 1fr auto;
+  gap:16px; align-items:center; padding:12px 2px;
+  border-bottom:1px solid var(--rule);
+  transition:background .12s ease;
+}
+.cast-row:hover{ background:rgba(255,255,255,.35); }
+.cast-portrait{
+  position:relative; width:52px; height:52px;
+  border:2px solid var(--ink); display:grid; place-items:center;
+  overflow:hidden;
+  background:linear-gradient(150deg, hsl(var(--h) 34% 52%), hsl(var(--h) 42% 24%)) center/cover;
+}
+.cast-portrait::after{
+  content:""; position:absolute; inset:0;
+  background-image:radial-gradient(rgba(0,0,0,.35) 1px, transparent 1.2px);
+  background-size:4px 4px; opacity:.45; mix-blend-mode:multiply;
+  pointer-events:none;
+}
+.cast-portrait.has-image::after{ opacity:0; }
+.cast-portrait.has-image span{ display:none; }
+.cast-portrait span{
+  font-family:var(--font-display); font-size:15px;
+  font-weight:900; color:#f7f0e1;
+}
+.cast-name a{
+  font-family:var(--font-display); font-size:16px; font-weight:700;
+  border-bottom:1px solid transparent;
+  transition:color .12s, border-color .12s;
+}
+.cast-name a:hover{ color:var(--red); border-bottom-color:var(--red); }
+.cast-char{
+  display:block; font-size:13px; font-style:italic;
+  color:var(--ink-2); margin-top:2px;
+}
+.cast-side{ display:flex; align-items:center; gap:10px; }
+
+/* ---------- Crew list ---------- */
+.crew-list{ display:flex; flex-wrap:wrap; gap:14px 26px; }
+.crew-item{ display:flex; flex-direction:column; gap:2px; }
+.crew-label{
+  font-family:var(--font-mono); font-size:8.5px;
+  letter-spacing:.18em; text-transform:uppercase;
+  color:var(--ink-3);
+}
+.crew-name{
+  font-family:var(--font-display); font-size:15px; font-weight:600;
+}
+.crew-name a:hover{ color:var(--red); text-decoration:underline; }
+
+/* ---------- Seasons display ---------- */
+.seasons-display{ display:flex; flex-direction:column; gap:14px; }
+.season-box{ border:1px solid var(--rule-dark); background:rgba(255,255,255,.3); }
+.season-box summary{
+  padding:12px 16px; cursor:pointer;
+  font-family:var(--font-mono); font-size:10px;
+  letter-spacing:.16em; text-transform:uppercase;
+  color:var(--ink); display:flex; justify-content:space-between; gap:12px;
+  list-style:none;
+}
+.season-box summary::-webkit-details-marker{ display:none; }
+.season-box summary::before{ content:"▸ "; color:var(--red); }
+.season-box[open] summary::before{ content:"▾ "; }
+.season-box summary .count{
+  font-family:var(--font-mono); font-size:9px;
+  color:var(--ink-3);
+}
+.episodes-list-display{ border-top:1px dashed var(--rule); padding:6px 16px 12px; }
+.episode-line{
+  display:grid; grid-template-columns:44px 1fr auto;
+  gap:12px; align-items:baseline; padding:6px 0;
+  border-bottom:1px dotted var(--rule);
+}
+.episode-line:last-child{ border-bottom:none; }
+.ep-num-display{
+  font-family:var(--font-mono); font-size:10px;
+  letter-spacing:.1em; color:var(--ink-3);
+}
+.ep-title-display{ font-family:var(--font-body); font-size:14px; font-weight:500; }
+.ep-date-display{
+  font-family:var(--font-mono); font-size:10px;
+  color:var(--ink-3); letter-spacing:.08em;
+}
+
+/* ---------- Stats ---------- */
+.ledger{ border-top:1px solid var(--rule); }
+.ledger-row{
+  display:grid; grid-template-columns:1fr auto;
+  gap:18px; align-items:center; padding:13px 2px;
+  border-bottom:1px solid var(--rule);
+}
+.ledger-row .l-name{ font-family:var(--font-display); font-size:16px; font-weight:600; }
+.ledger-row .l-count{
+  font-family:var(--font-mono); font-size:10px;
+  letter-spacing:.12em; color:var(--ink-3);
+}
+.gbar{
+  height:9px; background:var(--paper-3);
+  border:1px solid var(--rule-dark); margin-top:7px;
+}
+.gbar i{ display:block; height:100%; background:var(--red); }
+
+/* ---------- Empty ---------- */
+.empty{
+  border:1px dashed var(--rule-dark);
+  padding:46px 24px; text-align:center;
+  background:rgba(255,255,255,.25);
+}
+.empty .e-mark{
+  font-family:var(--font-display); font-size:30px;
+  color:var(--rule-dark); margin-bottom:10px;
+}
+.empty h3{
+  font-family:var(--font-display); font-size:20px;
+  font-weight:700; margin-bottom:6px;
+}
+.empty p{
+  font-size:14px; color:var(--ink-2);
+  max-width:46ch; margin:0 auto 18px;
+}
+
+/* ---------- Modal ---------- */
+#modalRoot{ display:none; }
+#modalRoot.open{ display:block; }
+.modal-backdrop{
+  position:fixed; inset:0; z-index:600;
+  background:rgba(25,21,16,.74);
+  display:flex; align-items:flex-start; justify-content:center;
+  padding:40px 18px; overflow-y:auto;
+  animation:fade .14s ease;
+}
+@keyframes fade{ from{opacity:0} to{opacity:1} }
+.modal{
+  width:100%; max-width:720px;
+  background:var(--paper);
+  border:2px solid var(--ink);
+  box-shadow:12px 12px 0 rgba(25,21,16,.92);
+  animation:drop .18s ease;
+}
+@keyframes drop{ from{transform:translateY(-14px); opacity:0} to{transform:translateY(0); opacity:1} }
+.modal-head{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:16px; padding:14px 20px;
+  border-bottom:2px solid var(--ink);
+  background:var(--paper-2);
+}
+.modal-head h2{
+  font-family:var(--font-display); font-size:21px;
+  font-weight:800; letter-spacing:-.01em;
+}
+.modal-x{
+  width:28px; height:28px; border:1px solid var(--ink);
+  background:var(--paper); cursor:pointer;
+  display:grid; place-items:center; font-size:13px; line-height:1;
+  transition:background .12s ease, color .12s ease;
+}
+.modal-x:hover{ background:var(--red); color:#fdf6e9; border-color:var(--red); }
+.modal-body{
+  padding:22px 20px 6px;
+  max-height:68vh; overflow-y:auto;
+}
+.modal-foot{
+  display:flex; justify-content:flex-end; gap:12px;
+  padding:16px 20px; border-top:2px solid var(--ink);
+  background:var(--paper-2);
+}
+
+/* ---------- Toast ---------- */
+#toastRoot{
+  position:fixed; left:26px; bottom:26px; z-index:900;
+  display:flex; flex-direction:column; gap:10px;
+  pointer-events:none;
+}
+.toast{
+  border:2px solid var(--ink); background:var(--paper);
+  box-shadow:5px 5px 0 var(--ink);
+  padding:10px 16px; font-family:var(--font-mono);
+  font-size:10px; letter-spacing:.1em; text-transform:uppercase;
+  animation:slipIn .18s ease; max-width:340px;
+}
+.toast.error{ background:var(--red); color:#fdf6e9; }
+.toast.info{ background:var(--blue); color:#f3f6fa; }
+@keyframes slipIn{ from{transform:translateX(-24px); opacity:0} to{transform:translateX(0); opacity:1} }
+
+/* ---------- Footer ---------- */
+.site-foot{
+  border-top:2px solid var(--ink); background:var(--paper-2);
+  padding:26px 28px 34px; margin-top:20px;
+}
+.foot-inner{
+  max-width:1240px; margin:0 auto;
+  display:flex; justify-content:space-between;
+  gap:22px; flex-wrap:wrap;
+  font-family:var(--font-mono); font-size:9px;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3);
+}
+.foot-inner b{ color:var(--ink-2); }
+
+/* ---------- Responsive ---------- */
+@media (max-width:980px){
+  .lead{ grid-template-columns:1fr; }
+  .lead-main{ padding-right:0; padding-bottom:30px; }
+  .lead-side{ border-left:none; border-top:1px solid var(--rule); padding-left:0; padding-top:22px; }
+  .title-hero{ grid-template-columns:1fr; gap:30px; }
+  .th-poster{ max-width:210px; }
+  .profile{ grid-template-columns:1fr; gap:26px; }
+  .profile-portrait{ max-width:160px; }
+}
+@media (max-width:700px){
+  .masthead, .container{ padding-left:16px; padding-right:16px; }
+  .masthead-top{ font-size:8.5px; letter-spacing:.14em; }
+  .mainnav a{ padding:10px 11px; font-size:9.5px; letter-spacing:.12em; }
+  .grid{ grid-template-columns:repeat(auto-fill, minmax(144px, 1fr)); gap:22px 14px; }
+  .grid.people{ grid-template-columns:repeat(auto-fill, minmax(132px, 1fr)); gap:22px 14px; }
+  .lead-main{ grid-template-columns:130px 1fr; gap:18px; }
+  .row-2, .row-3{ grid-template-columns:1fr; gap:0; }
+  .credit-row{ grid-template-columns:48px 1fr; gap:12px; }
+  .credit-row .cr-role{ grid-column:2; justify-self:start; margin-top:4px; }
+  .cast-row{ grid-template-columns:44px 1fr; gap:12px; }
+  .cast-row .cast-side{ grid-column:2; margin-top:6px; }
+  .cast-portrait{ width:44px; height:44px; }
+  .cast-item{ grid-template-columns:1fr 1fr 32px; }
+  .cast-item .cast-character{ grid-column:1 / -1; }
+  .episode-row{ grid-template-columns:44px 1fr 28px; }
+  .episode-row .ep-title{ grid-column:1 / -1; grid-row:2; }
+  .episode-row .ep-airdate{ grid-column:1 / -1; grid-row:3; }
+  .episode-row .btn.bare{ grid-column:3; grid-row:1; }
+  #toastRoot{ left:14px; right:14px; bottom:14px; }
+  .toast{ max-width:none; }
+  .modal-backdrop{ padding:16px 10px; }
+  .filters{ gap:16px; }
+}
+@media (prefers-reduced-motion:reduce){
+  *{ animation-duration:.001ms !important; transition-duration:.001ms !important; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="masthead">
+  <div class="masthead-top">
+    <div class="mh-left">Godina I &middot; Broj 1 &middot; Beograd</div>
+    <div class="mh-right">
+      <button class="btn tiny" data-action="title-new" data-type="film">+ Film</button>
+      <button class="btn tiny" data-action="title-new" data-type="series">+ Serija</button>
+      <button class="btn tiny" data-action="person-new">+ Osoba</button>
+      <button class="btn tiny bare" data-action="export">Izvoz</button>
+      <button class="btn tiny bare" data-action="import">Uvoz</button>
+    </div>
+  </div>
+  <h1 class="logo">Srpska <em>filmska</em> baza</h1>
+  <p class="tagline">
+    <span class="t-red">Filmovi</span>
+    <span class="t-sep">&middot;</span>
+    <span class="t-blue">Serije</span>
+    <span class="t-sep">&middot;</span>
+    <span class="t-ink">Glumci</span>
+  </p>
+  <nav class="mainnav" id="mainnav">
+    <a href="#/" data-route="home">Početna</a>
+    <a href="#/films" data-route="films">Filmovi</a>
+    <a href="#/series" data-route="series">Serije</a>
+    <a href="#/people" data-route="people">Glumci i ekipa</a>
+    <a href="#/stats" data-route="stats">Statistika</a>
+    <a href="#/about" data-route="about">O bazi</a>
+  </nav>
+  <form class="searchband" id="globalSearchForm" autocomplete="off">
+    <span class="sb-mark">Traži</span>
+    <input type="search" id="globalSearchInput" placeholder="naslov, glumac, žanr…" aria-label="Pretraga baze">
+    <button type="submit" class="sb-go" aria-label="Pokreni pretragu">&#8599;</button>
+  </form>
+</header>
+
+<main class="container" id="view"></main>
+
+<footer class="site-foot">
+  <div class="foot-inner">
+    <div><b>Srpska filmska baza</b> &mdash; lična arhiva</div>
+    <div>Tekst: localStorage &middot; Slike: IndexedDB</div>
+    <div>Izvoz / uvoz u JSON formatu</div>
+  </div>
+</footer>
+
+<div id="modalRoot"></div>
+<div id="toastRoot"></div>
+<input type="file" id="importFile" accept="application/json" hidden>
+
+<script>
+/* ============================================================
+   1. UTIL
+   ============================================================ */
+function esc(v){
+  if (v === null || v === undefined) return '';
+  return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function initials(text){
+  if (!text) return '?';
+  const w = String(text).trim().split(/\s+/).filter(Boolean);
+  if (!w.length) return '?';
+  if (w.length === 1) return w[0].slice(0,2).toUpperCase();
+  return (w[0][0] + w[w.length-1][0]).toUpperCase();
+}
+function hueFor(text){
+  let h=0; const s=String(text||'');
+  for (let i=0;i<s.length;i++) h = (h*31 + s.charCodeAt(i)) % 360;
+  return h;
+}
+function num(v, fb){ const n = parseFloat(v); return isNaN(n) ? fb : n; }
+function pluralUloga(n){
+  const a=n%10,b=n%100;
+  if (a===1&&b!==11) return 'uloga';
+  if (a>=2&&a<=4&&(b<12||b>14)) return 'uloge';
+  return 'uloga';
+}
+function pluralNaslov(n){
+  const a=n%10,b=n%100;
+  if (a===1&&b!==11) return 'naslov';
+  if (a>=2&&a<=4&&(b<12||b>14)) return 'naslova';
+  return 'naslova';
+}
+function pluralOsoba(n){
+  const a=n%10,b=n%100;
+  if (a===1&&b!==11) return 'osoba';
+  if (a>=2&&a<=4&&(b<12||b>14)) return 'osobe';
+  return 'osoba';
+}
+function pluralEpizoda(n){
+  const a=n%10,b=n%100;
+  if (a===1&&b!==11) return 'epizoda';
+  if (a>=2&&a<=4&&(b<12||b>14)) return 'epizode';
+  return 'epizoda';
+}
+function yearsLabel(t){
+  if (!t.year) return '—';
+  if (t.type === 'series' && t.endYear) return t.year + '–' + t.endYear;
+  return String(t.year);
+}
+function fmtDate(iso){
+  if (!iso) return '—';
+  const [y, m, d] = String(iso).split('-');
+  if (!y || !m || !d) return iso;
+  return `${d}.${m}.${y}.`;
+}
+function toast(msg, type){
+  const root = document.getElementById('toastRoot');
+  const el = document.createElement('div');
+  el.className = 'toast' + (type ? ' ' + type : '');
+  el.textContent = msg;
+  root.appendChild(el);
+  setTimeout(() => {
+    el.style.transition = 'opacity .22s ease, transform .22s ease';
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(-24px)';
+    setTimeout(() => el.remove(), 240);
+  }, 2700);
+}
+function fmtBytes(b){
+  if (!b || b < 1024) return (b || 0) + ' B';
+  if (b < 1024*1024) return (b/1024).toFixed(1) + ' KB';
+  return (b/1024/1024).toFixed(2) + ' MB';
+}
+
+const OCCUPATIONS = [
+  'Glumac/ica', 'Reditelj/ka', 'Scenarista', 'Producent',
+  'Kompozitor', 'Direktor fotografije', 'Montažer/ka',
+  'Kostimograf/kinja', 'Scenograf/kinja'
+];
+
+/* ============================================================
+   2. STATE
+   ============================================================ */
+const STORAGE_KEY = 'srpska_filmska_baza_v3';
+let db = { people: [], titles: [], meta: { nextPersonId: 1, nextTitleId: 1, version: 3 } };
+
+const ui = {
+  listType: 'film',
+  films:  { query:'', genre:'', sort:'year-desc' },
+  series: { query:'', genre:'', sort:'year-desc' },
+  people: { query:'', sort:'name-asc' }
+};
+
+let currentRoute = { segments:[], params:new URLSearchParams() };
+let lastPath = null;
+
+/* ============================================================
+   3. INDEXEDDB FOR IMAGES
+   ============================================================ */
+const IMG_DB_NAME = 'srpska_baza_images_v3';
+const IMG_STORE = 'images';
+let imageDBPromise = null;
+
+function getImageDB(){
+  if (imageDBPromise) return imageDBPromise;
+  imageDBPromise = new Promise((resolve, reject) => {
+    if (!window.indexedDB){ reject(new Error('IndexedDB nije dostupan.')); return; }
+    const req = indexedDB.open(IMG_DB_NAME, 1);
+    req.onupgradeneeded = () => {
+      const idb = req.result;
+      if (!idb.objectStoreNames.contains(IMG_STORE)) idb.createObjectStore(IMG_STORE);
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+  return imageDBPromise;
+}
+async function putImage(key, blob){
+  const idb = await getImageDB();
+  return new Promise((res, rej) => {
+    const tx = idb.transaction(IMG_STORE, 'readwrite');
+    tx.objectStore(IMG_STORE).put(blob, key);
+    tx.oncomplete = () => res();
+    tx.onerror = () => rej(tx.error);
+  });
+}
+async function getImage(key){
+  try{
+    const idb = await getImageDB();
+    return await new Promise((res, rej) => {
+      const tx = idb.transaction(IMG_STORE, 'readonly');
+      const req = tx.objectStore(IMG_STORE).get(key);
+      req.onsuccess = () => res(req.result || null);
+      req.onerror = () => rej(req.error);
+    });
+  }catch(e){ return null; }
+}
+async function deleteImage(key){
+  try{
+    const idb = await getImageDB();
+    return await new Promise((res, rej) => {
+      const tx = idb.transaction(IMG_STORE, 'readwrite');
+      tx.objectStore(IMG_STORE).delete(key);
+      tx.oncomplete = () => res();
+      tx.onerror = () => rej(tx.error);
+    });
+  }catch(e){ /* ignore */ }
+}
+async function clearAllImages(){
+  try{
+    const idb = await getImageDB();
+    return await new Promise((res, rej) => {
+      const tx = idb.transaction(IMG_STORE, 'readwrite');
+      tx.objectStore(IMG_STORE).clear();
+      tx.oncomplete = () => res();
+      tx.onerror = () => rej(tx.error);
+    });
+  }catch(e){ /* ignore */ }
+}
+async function getImageKeys(){
+  try{
+    const idb = await getImageDB();
+    return await new Promise((res, rej) => {
+      const tx = idb.transaction(IMG_STORE, 'readonly');
+      const req = tx.objectStore(IMG_STORE).getAllKeys();
+      req.onsuccess = () => res(new Set(req.result));
+      req.onerror = () => rej(req.error);
+    });
+  }catch(e){ return new Set(); }
+}
+async function getImageStats(){
+  const stats = { count:0, size:0, quota:0, usage:0 };
+  try{
+    if (navigator.storage && navigator.storage.estimate){
+      const est = await navigator.storage.estimate();
+      stats.quota = est.quota || 0;
+      stats.usage = est.usage || 0;
+    }
+  }catch(e){ /* ignore */ }
+  try{
+    const idb = await getImageDB();
+    await new Promise((resolve) => {
+      const tx = idb.transaction(IMG_STORE, 'readonly');
+      const req = tx.objectStore(IMG_STORE).openCursor();
+      req.onsuccess = () => {
+        const cur = req.result;
+        if (cur){
+          stats.count++;
+          if (cur.value && cur.value.size) stats.size += cur.value.size;
+          cur.continue();
+        } else resolve();
+      };
+      req.onerror = () => resolve();
+    });
+  }catch(e){ /* ignore */ }
+  return stats;
+}
+
+function compressImage(file, maxDim, quality){
+  return new Promise((resolve, reject) => {
+    if (!file || !file.type || !file.type.startsWith('image/')){
+      reject(new Error('Nije slika.')); return;
+    }
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width, height } = img;
+      if (width > maxDim || height > maxDim){
+        if (width >= height){
+          height = Math.round(height * maxDim / width); width = maxDim;
+        } else {
+          width = Math.round(width * maxDim / height); height = maxDim;
+        }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#f2ebdc'; ctx.fillRect(0, 0, width, height);
+      ctx.drawImage(img, 0, 0, width, height);
+      canvas.toBlob(b => b ? resolve(b) : reject(new Error('Kompresija neuspešna.')),
+        'image/jpeg', quality);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Ne mogu da učitam sliku.')); };
+    img.src = url;
+  });
+}
+
+const imageURLs = new Map();
+let knownImageKeys = new Set();
+
+async function refreshKnownImageKeys(){ knownImageKeys = await getImageKeys(); }
+
+function invalidateImageURL(key){
+  const entry = imageURLs.get(key);
+  if (entry){ try{ URL.revokeObjectURL(entry.url); }catch(e){} imageURLs.delete(key); }
+  knownImageKeys.delete(key);
+}
+
+async function getImageURL(key){
+  if (imageURLs.has(key)) return imageURLs.get(key).url;
+  const blob = await getImage(key);
+  if (!blob) return null;
+  const url = URL.createObjectURL(blob);
+  imageURLs.set(key, { url, blobSize: blob.size || 0 });
+  knownImageKeys.add(key);
+  return url;
+}
+
+async function applyImages(container){
+  const root = container || document;
+  if (!knownImageKeys || !knownImageKeys.size) await refreshKnownImageKeys();
+  const els = root.querySelectorAll('[data-img-key]');
+  for (const el of els){
+    const key = el.dataset.imgKey;
+    if (!key || !knownImageKeys.has(key)) continue;
+    const url = await getImageURL(key);
+    if (!url) continue;
+    el.style.backgroundImage = `url("${url}")`;
+    el.classList.add('has-image');
+  }
+}
+
+/* ============================================================
+   4. STORAGE (text)
+   ============================================================ */
+function saveDB(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); return true; }
+  catch(e){ console.error(e); toast('Greška pri čuvanju teksta', 'error'); return false; }
+}
+function loadDB(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw);
+    if (!parsed || !Array.isArray(parsed.people) || !Array.isArray(parsed.titles)) return false;
+    db = parsed;
+    if (!db.meta) db.meta = { nextPersonId:1, nextTitleId:1, version:3 };
+    if (!db.meta.nextPersonId) db.meta.nextPersonId = 1;
+    if (!db.meta.nextTitleId)  db.meta.nextTitleId  = 1;
+    return true;
+  }catch(e){ console.error(e); return false; }
+}
+
+/* ============================================================
+   5. LOOKUPS
+   ============================================================ */
+function getPerson(id){ return db.people.find(p => String(p.id) === String(id)); }
+function getTitle(id){ return db.titles.find(t => String(t.id) === String(id)); }
+
+function filmographyFor(personId){
+  const acting = [], directing = [], writing = [];
+  db.titles.forEach(t => {
+    const ce = (t.cast || []).find(c => String(c.personId) === String(personId));
+    if (ce) acting.push({ title:t, character:ce.character, role:ce.role });
+    if ((t.directors || []).some(d => String(d) === String(personId))) directing.push({ title:t });
+    if ((t.screenwriters || []).some(s => String(s) === String(personId))) writing.push({ title:t });
+  });
+  const sortFn = (a,b) => (a.title.year||0) - (b.title.year||0);
+  acting.sort(sortFn); directing.sort(sortFn); writing.sort(sortFn);
+  return { acting, directing, writing };
+}
+
+function allGenres(){
+  const set = {};
+  db.titles.forEach(t => (t.genres||[]).forEach(g => { set[g] = true; }));
+  return Object.keys(set).sort((a,b) => a.localeCompare(b,'sr'));
+}
+
+function resolvePeople(names, defaultOccupation){
+  const ids = [];
+  const created = [];
+  names.forEach(rawName => {
+    const name = String(rawName || '').trim();
+    if (!name) return;
+    const existing = db.people.find(p => p.name.toLowerCase() === name.toLowerCase());
+    if (existing){ ids.push(existing.id); return; }
+    const newPerson = {
+      id: db.meta.nextPersonId++,
+      name: name,
+      birthDate: '',
+      birthPlace: '',
+      occupations: defaultOccupation ? [defaultOccupation] : [],
+      bio: ''
+    };
+    db.people.push(newPerson);
+    ids.push(newPerson.id);
+    created.push(name);
+  });
+  return { ids, created };
+}
+
+function splitNames(str){
+  return String(str || '').split(',').map(s => s.trim()).filter(Boolean);
+}
+
+/* ============================================================
+   6. ROUTING
+   ============================================================ */
+function parsePath(path){
+  const raw = String(path || '/').replace(/^#/, '');
+  const qi = raw.indexOf('?');
+  const clean = qi === -1 ? raw : raw.slice(0, qi);
+  const qs = qi === -1 ? '' : raw.slice(qi + 1);
+  return { segments: clean.split('/').filter(Boolean), params: new URLSearchParams(qs) };
+}
+function go(path){
+  const target = '#' + path;
+  try{ if (location.hash !== target) location.hash = target; }catch(e){}
+  renderPath(path);
+}
+function renderPath(path){
+  if (path === lastPath) return;
+  lastPath = path;
+  currentRoute = parsePath(path);
+  render();
+}
+window.addEventListener('hashchange', () => renderPath(location.hash.replace(/^#/, '') || '/'));
+window.addEventListener('popstate', () => renderPath(location.hash.replace(/^#/, '') || '/'));
+
+/* ============================================================
+   7. RENDER
+   ============================================================ */
+function render(){
+  const root = currentRoute.segments[0] || 'home';
+  const view = document.getElementById('view');
+  let html = '';
+  switch(root){
+    case 'home':    html = viewHome(); break;
+    case 'films':   html = viewList('film'); break;
+    case 'series':  html = viewList('series'); break;
+    case 'people':  html = viewPeople(); break;
+    case 'person':  html = viewPerson(currentRoute.segments[1]); break;
+    case 'title':   html = viewTitle(currentRoute.segments[1]); break;
+    case 'search':  html = viewSearch(currentRoute.params.get('q') || ''); break;
+    case 'stats':   html = viewStats(); break;
+    case 'about':   html = viewAbout(); break;
+    default:        html = notFound('Stranica nije pronađena', 'Tražena ruta ne postoji u arhivi.');
+  }
+  view.innerHTML = html;
+  updateNav(root);
+  attachListeners();
+  applyImages(view);
+
+  if (root === 'about'){
+    setTimeout(async () => {
+      const el = document.getElementById('storageInfo');
+      if (!el) return;
+      const stats = await getImageStats();
+      el.innerHTML = `
+        <div class="ledger-row"><div><div class="l-name">Sačuvanih slika</div></div><div class="l-count">${stats.count}</div></div>
+        <div class="ledger-row"><div><div class="l-name">Veličina slika</div></div><div class="l-count">${fmtBytes(stats.size)}</div></div>
+        <div class="ledger-row"><div><div class="l-name">Iskorišćeno</div></div><div class="l-count">${fmtBytes(stats.usage)}</div></div>
+        <div class="ledger-row"><div><div class="l-name">Dostupno (procena)</div></div><div class="l-count">${stats.quota ? fmtBytes(stats.quota) : 'nepoznato'}</div></div>
+      `;
+    }, 10);
+  }
+  try{ window.scrollTo(0,0); }catch(e){}
+}
+
+function updateNav(root){
+  const map = { home:'home', films:'films', series:'series', people:'people', person:'people', stats:'stats', about:'about', title:'', search:'' };
+  const active = map[root] || '';
+  document.querySelectorAll('.mainnav a[data-route]').forEach(a => {
+    a.classList.toggle('is-active', a.dataset.route === active);
+  });
+}
+
+/* ============================================================
+   8. SHARED MARKUP
+   ============================================================ */
+function titleCard(t){
+  const h = hueFor(t.title);
+  const stamp = t.type === 'film'
+    ? '<span class="stamp">Film</span>'
+    : '<span class="stamp series">Serija</span>';
+  const genres = (t.genres || []).slice(0,3).join(' / ') || '&nbsp;';
+  const rating = t.rating ? '&#9733; ' + Number(t.rating).toFixed(1) : '&#9733; —';
+  return `
+    <a class="tcard" href="#/title/${t.id}">
+      <div class="tcard-poster" data-img-key="title_${t.id}" style="--h:${h}">
+        ${stamp}
+        <span class="ini">${esc(initials(t.title))}</span>
+      </div>
+      <div class="tcard-body">
+        <h3>${esc(t.title)}</h3>
+        <div class="tcard-year">${esc(yearsLabel(t))}</div>
+        <div class="tcard-genres">${esc(genres)}</div>
+        <div class="tcard-rating">${rating}</div>
+      </div>
+    </a>`;
+}
+
+function personCard(p){
+  const h = hueFor(p.name);
+  const filmo = filmographyFor(p.id);
+  const n = filmo.acting.length + filmo.directing.length + filmo.writing.length;
+  const meta = [p.birthPlace].filter(Boolean).join('') || 'Nepoznato';
+  const occ = (p.occupations || []).slice(0,2).join(' · ') || 'Zanimanje nije uneto';
+  return `
+    <a class="pcard" href="#/person/${p.id}">
+      <div class="pcard-portrait" data-img-key="person_${p.id}" style="--h:${h}">
+        <span>${esc(initials(p.name))}</span>
+      </div>
+      <div class="pcard-name">${esc(p.name)}</div>
+      <div class="pcard-meta">${esc(meta)}</div>
+      <div class="pcard-count">${esc(occ)}</div>
+    </a>`;
+}
+
+function emptyBlock(mark, title, text, actionHtml){
+  return `
+    <div class="empty">
+      <div class="e-mark">${mark}</div>
+      <h3>${esc(title)}</h3>
+      <p>${esc(text)}</p>
+      ${actionHtml || ''}
+    </div>`;
+}
+function secHead(num, title, meta){
+  return `
+    <div class="sec-head">
+      <span class="sec-num">${num}</span>
+      <h2>${esc(title)}</h2>
+      <span class="sec-line"></span>
+      ${meta ? `<span class="sec-meta">${esc(meta)}</span>` : ''}
+    </div>`;
+}
+function roleClass(role){
+  const r = String(role || '').toLowerCase();
+  if (r.indexOf('glavna') !== -1) return 'rstamp main';
+  if (r.indexOf('epizod') !== -1 || r.indexOf('gost') !== -1) return 'rstamp epi';
+  return 'rstamp';
+}
+function notFound(title, text){
+  return `<div style="padding:70px 0">${emptyBlock('&#10005;', title, text, '<a class="btn" href="#/">Nazad na početnu</a>')}</div>`;
+}
+
+/* ============================================================
+   9. HOME
+   ============================================================ */
+function viewHome(){
+  const films  = db.titles.filter(t => t.type === 'film');
+  const series = db.titles.filter(t => t.type === 'series');
+  const roles  = db.titles.reduce((s,t) => s + (t.cast ? t.cast.length : 0), 0);
+  const featured = db.titles.slice().sort((a,b) => (b.rating||0)-(a.rating||0))[0];
+  const latest = db.titles.slice().sort((a,b) => b.id - a.id).slice(0,6);
+  const recentFilms  = films.slice().sort((a,b) => (b.year||0)-(a.year||0)).slice(0,5);
+  const recentSeries = series.slice().sort((a,b) => (b.year||0)-(a.year||0)).slice(0,5);
+  const people = db.people.slice(0,10);
+
+  const isEmpty = !db.titles.length && !db.people.length;
+  if (isEmpty){
+    return `
+      <div class="page-head">
+        <div>
+          <h1>Dobrodošli u bazu</h1>
+          <div class="sub">Arhiva je prazna &mdash; vreme je da počnemo</div>
+        </div>
+      </div>
+      ${emptyBlock('&#10022;', 'Vaša baza je prazna',
+        'Počnite tako što ćete dodati prvi film, seriju ili osobu. Sve što unesete čuva se lokalno u vašem pregledaču.',
+        `<div class="btn-row" style="justify-content:center">
+          <button class="btn solid" data-action="title-new" data-type="film">+ Dodaj film</button>
+          <button class="btn blue" data-action="title-new" data-type="series">+ Dodaj seriju</button>
+          <button class="btn" data-action="person-new">+ Dodaj osobu</button>
+        </div>`
+      )}
+    `;
+  }
+
+  let leadHtml = '';
+  if (featured){
+    leadHtml = `
+      <div class="lead">
+        <article class="lead-main">
+          <div class="lead-poster" data-img-key="title_${featured.id}" style="--h:${hueFor(featured.title)}">
+            <span>${esc(initials(featured.title))}</span>
+          </div>
+          <div class="lead-copy">
+            <div class="kicker">Iz arhive &mdash; najbolje ocenjeno</div>
+            <h2>${esc(featured.title)}</h2>
+            <div class="lead-meta">
+              ${esc(yearsLabel(featured))}
+              ${featured.type === 'film' && featured.runtime ? ' &middot; ' + esc(featured.runtime) + ' min' : ''}
+              ${featured.rating ? ' &middot; &#9733; ' + Number(featured.rating).toFixed(1) : ''}
+            </div>
+            <p class="lede">${esc(featured.synopsis || 'Opis još nije unet.')}</p>
+            <div class="btn-row">
+              <a class="btn solid" href="#/title/${featured.id}">Otvori naslov &rarr;</a>
+              <a class="btn" href="#/films">Svi filmovi</a>
+            </div>
+          </div>
+        </article>
+        <aside class="lead-side">
+          <div class="side-title">Najnovije u bazi</div>
+          <ol class="side-list">
+            ${latest.map((t,i) => `
+              <li><a href="#/title/${t.id}">
+                <span class="sl-num">${String(i+1).padStart(2,'0')}</span>
+                <span class="sl-title">${esc(t.title)}</span>
+                <span class="sl-year">${esc(t.year || '—')}</span>
+              </a></li>`).join('')}
+          </ol>
+        </aside>
+      </div>`;
+  }
+
+  return `
+    ${leadHtml}
+    <div class="numbers">
+      <div class="num"><b>${films.length}</b><span>Filmova</span></div>
+      <div class="num"><b>${series.length}</b><span>Serija</span></div>
+      <div class="num"><b>${db.people.length}</b><span>Osoba</span></div>
+      <div class="num"><b>${roles}</b><span>Uloga</span></div>
+    </div>
+    ${secHead('01', 'Filmovi', films.length + ' ' + pluralNaslov(films.length))}
+    ${recentFilms.length
+      ? `<div class="grid">${recentFilms.map(titleCard).join('')}</div>`
+      : emptyBlock('&#9671;', 'Još nema filmova', 'Dodajte svoj prvi film.',
+          `<button class="btn solid" data-action="title-new" data-type="film">+ Dodaj film</button>`)}
+    <div class="btn-row" style="margin-top:26px">
+      <a class="btn" href="#/films">Ceo katalog &rarr;</a>
+    </div>
+    ${secHead('02', 'Serije', series.length + ' ' + pluralNaslov(series.length))}
+    ${recentSeries.length
+      ? `<div class="grid">${recentSeries.map(titleCard).join('')}</div>`
+      : emptyBlock('&#9671;', 'Još nema serija', 'Dodajte svoju prvu seriju.',
+          `<button class="btn blue" data-action="title-new" data-type="series">+ Dodaj seriju</button>`)}
+    <div class="btn-row" style="margin-top:26px">
+      <a class="btn" href="#/series">Sve serije &rarr;</a>
+    </div>
+    ${secHead('03', 'Glumci i ekipa', db.people.length + ' ' + pluralOsoba(db.people.length))}
+    ${people.length
+      ? `<div class="grid people">${people.map(personCard).join('')}</div>`
+      : emptyBlock('&#9671;', 'Još nema osoba', 'Dodajte glumce, reditelje i ostalu ekipu.',
+          `<button class="btn" data-action="person-new">+ Dodaj osobu</button>`)}
+    <div class="btn-row" style="margin-top:26px">
+      <a class="btn" href="#/people">Sve osobe &rarr;</a>
+    </div>
+  `;
+}
+
+/* ============================================================
+   10. LIST VIEWS
+   ============================================================ */
+function viewList(type){
+  ui.listType = type;
+  const state = type === 'film' ? ui.films : ui.series;
+  const count = db.titles.filter(t => t.type === type).length;
+  const label = type === 'film' ? 'Filmovi' : 'Serije';
+  const genreOpts = ['<option value="">Svi žanrovi</option>']
+    .concat(allGenres().map(g => `<option value="${esc(g)}"${state.genre === g ? ' selected' : ''}>${esc(g)}</option>`))
+    .join('');
+
+  return `
+    <div class="page-head">
+      <div>
+        <h1>${label}</h1>
+        <div class="sub"><b>${count}</b> ${pluralNaslov(count)} u arhivi</div>
+      </div>
+      <button class="btn solid" data-action="title-new" data-type="${type}">
+        + Dodaj ${type === 'film' ? 'film' : 'seriju'}
+      </button>
+    </div>
+    <div class="filters">
+      <label class="f-field wide">
+        <span class="lab">Pretraga</span>
+        <input class="inp" id="listQuery" type="search" placeholder="naslov, reditelj, žanr…" value="${esc(state.query)}">
+      </label>
+      <label class="f-field">
+        <span class="lab">Žanr</span>
+        <select class="sel" id="listGenre">${genreOpts}</select>
+      </label>
+      <label class="f-field">
+        <span class="lab">Sortiranje</span>
+        <select class="sel" id="listSort">
+          <option value="year-desc"${state.sort==='year-desc'?' selected':''}>Najnoviji prvo</option>
+          <option value="year-asc"${state.sort==='year-asc'?' selected':''}>Najstariji prvo</option>
+          <option value="rating-desc"${state.sort==='rating-desc'?' selected':''}>Najbolje ocenjeni</option>
+          <option value="title-asc"${state.sort==='title-asc'?' selected':''}>Naslov A–Š</option>
+        </select>
+      </label>
+    </div>
+    <div id="listGrid" class="grid"></div>
+  `;
+}
+
+function renderTitleGrid(){
+  const type = ui.listType;
+  const state = type === 'film' ? ui.films : ui.series;
+  const grid = document.getElementById('listGrid');
+  if (!grid) return;
+  let items = db.titles.filter(t => t.type === type);
+  if (state.query){
+    const q = state.query.toLowerCase();
+    items = items.filter(t => {
+      const directorsNames = (t.directors||[]).map(id => getPerson(id)?.name || '').join(' ');
+      const screenwritersNames = (t.screenwriters||[]).map(id => getPerson(id)?.name || '').join(' ');
+      const castNames = (t.cast||[]).map(c => getPerson(c.personId)?.name || '').join(' ');
+      const hay = [t.title, directorsNames, screenwritersNames, castNames, (t.genres||[]).join(' '), t.synopsis].join(' ').toLowerCase();
+      return hay.indexOf(q) !== -1;
+    });
+  }
+  if (state.genre){
+    items = items.filter(t => (t.genres||[]).indexOf(state.genre) !== -1);
+  }
+  switch (state.sort){
+    case 'year-asc':    items.sort((a,b) => (a.year||0)-(b.year||0)); break;
+    case 'rating-desc': items.sort((a,b) => (b.rating||0)-(a.rating||0)); break;
+    case 'title-asc':   items.sort((a,b) => a.title.localeCompare(b.title,'sr')); break;
+    default:            items.sort((a,b) => (b.year||0)-(a.year||0));
+  }
+  if (!items.length){
+    grid.innerHTML = emptyBlock('&#9671;', 'Nema rezultata', 'Nijedan naslov ne odgovara zadatim filterima.',
+      `<button class="btn solid" data-action="title-new" data-type="${type}">+ Dodaj naslov</button>`);
+    return;
+  }
+  grid.innerHTML = items.map(titleCard).join('');
+  applyImages(grid);
+}
+
+function viewPeople(){
+  return `
+    <div class="page-head">
+      <div>
+        <h1>Glumci i ekipa</h1>
+        <div class="sub"><b>${db.people.length}</b> ${pluralOsoba(db.people.length)} u arhivi</div>
+      </div>
+      <button class="btn solid" data-action="person-new">+ Dodaj osobu</button>
+    </div>
+    <div class="filters">
+      <label class="f-field wide">
+        <span class="lab">Pretraga</span>
+        <input class="inp" id="peopleQuery" type="search" placeholder="ime, mesto rođenja, zanimanje…" value="${esc(ui.people.query)}">
+      </label>
+      <label class="f-field">
+        <span class="lab">Sortiranje</span>
+        <select class="sel" id="peopleSort">
+          <option value="name-asc"${ui.people.sort==='name-asc'?' selected':''}>Ime A–Š</option>
+          <option value="name-desc"${ui.people.sort==='name-desc'?' selected':''}>Ime Š–A</option>
+          <option value="credits-desc"${ui.people.sort==='credits-desc'?' selected':''}>Najviše uloga</option>
+          <option value="birth-asc"${ui.people.sort==='birth-asc'?' selected':''}>Godina rođenja</option>
+        </select>
+      </label>
+    </div>
+    <div id="peopleGrid" class="grid people"></div>
+  `;
+}
+
+function renderPeopleGrid(){
+  const grid = document.getElementById('peopleGrid');
+  if (!grid) return;
+  let items = db.people.slice();
+  if (ui.people.query){
+    const q = ui.people.query.toLowerCase();
+    items = items.filter(p => (p.name + ' ' + (p.birthPlace||'') + ' ' + (p.occupations||[]).join(' ')).toLowerCase().indexOf(q) !== -1);
+  }
+  switch (ui.people.sort){
+    case 'name-desc':    items.sort((a,b) => b.name.localeCompare(a.name,'sr')); break;
+    case 'credits-desc': items.sort((a,b) => {
+      const fa = filmographyFor(a.id), fb = filmographyFor(b.id);
+      return (fb.acting.length+fb.directing.length+fb.writing.length) - (fa.acting.length+fa.directing.length+fa.writing.length);
+    }); break;
+    case 'birth-asc':    items.sort((a,b) => (a.birthDate||'9999').localeCompare(b.birthDate||'9999')); break;
+    default:             items.sort((a,b) => a.name.localeCompare(b.name,'sr'));
+  }
+  if (!items.length){
+    grid.innerHTML = emptyBlock('&#9671;', 'Nema osoba', 'Nijedna osoba ne odgovara zadatim filterima.',
+      '<button class="btn solid" data-action="person-new">+ Dodaj osobu</button>');
+    return;
+  }
+  grid.innerHTML = items.map(personCard).join('');
+  applyImages(grid);
+}
+
+/* ============================================================
+   11. PERSON DETAIL
+   ============================================================ */
+function viewPerson(id){
+  const p = getPerson(id);
+  if (!p) return notFound('Osoba nije pronađena', 'Tražena osoba ne postoji u arhivi.');
+  const filmo = filmographyFor(p.id);
+  const total = filmo.acting.length + filmo.directing.length + filmo.writing.length;
+
+  const occChips = (p.occupations || []).map(o =>
+    `<span class="occ-chip accent">${esc(o)}</span>`).join('') || '<span class="occ-chip">Zanimanje nije uneto</span>';
+
+  const facts = [];
+  if (p.birthDate) facts.push(`<div class="fact"><dt>Datum rođenja</dt><dd>${esc(fmtDate(p.birthDate))}</dd></div>`);
+  if (p.birthPlace) facts.push(`<div class="fact"><dt>Mesto rođenja</dt><dd>${esc(p.birthPlace)}</dd></div>`);
+  facts.push(`<div class="fact"><dt>Zapisa u bazi</dt><dd>${total}</dd></div>`);
+
+  const creditRow = c => `
+    <div class="credit-row">
+      <div class="cr-year">${esc(c.title.year || '—')}</div>
+      <div class="cr-main">
+        <a href="#/title/${c.title.id}">${esc(c.title.title)}</a>
+        ${c.character ? `<span class="cr-char">kao <b>${esc(c.character)}</b></span>` : ''}
+      </div>
+      <div class="cr-role">${c.role ? `<span class="${roleClass(c.role)}">${esc(c.role)}</span>` : ''}</div>
+    </div>`;
+
+  const simpleRow = c => `
+    <div class="credit-row">
+      <div class="cr-year">${esc(c.title.year || '—')}</div>
+      <div class="cr-main">
+        <a href="#/title/${c.title.id}">${esc(c.title.title)}</a>
+        <span class="cr-char">${c.title.type === 'film' ? 'film' : 'serija'}</span>
+      </div>
+      <div class="cr-role"></div>
+    </div>`;
+
+  return `
+    <div class="profile">
+      <div class="profile-portrait" data-img-key="person_${p.id}" style="--h:${hueFor(p.name)}">
+        <span>${esc(initials(p.name))}</span>
+      </div>
+      <div class="profile-body">
+        <div class="kicker">Osoba u arhivi</div>
+        <h1>${esc(p.name)}</h1>
+        <div class="occ-chips">${occChips}</div>
+        ${p.bio ? `<p class="lede" style="margin-bottom:6px">${esc(p.bio)}</p>` : ''}
+        <div class="facts">${facts.join('')}</div>
+        <div class="btn-row">
+          <button class="btn" data-action="person-edit" data-id="${p.id}">Uredi osobu</button>
+          <button class="btn blue" data-action="credit-add-person" data-id="${p.id}">+ Dodaj ulogu</button>
+          <button class="btn outline-red" data-action="person-delete" data-id="${p.id}">Obriši</button>
+        </div>
+      </div>
+    </div>
+
+    ${total === 0
+      ? emptyBlock('&#9671;', 'Nema zabeleženih radova', 'Ova osoba još nije povezana ni sa jednim naslovom.',
+          `<button class="btn blue" data-action="credit-add-person" data-id="${p.id}">+ Dodaj ulogu</button>`)
+      : ''}
+
+    ${filmo.acting.length ? `
+      ${secHead('01', 'Glumačke uloge', filmo.acting.length + ' ' + pluralUloga(filmo.acting.length))}
+      <div class="rows">${filmo.acting.map(creditRow).join('')}</div>
+    ` : ''}
+
+    ${filmo.directing.length ? `
+      ${secHead('02', 'Rediteljski radovi', filmo.directing.length + ' ' + pluralNaslov(filmo.directing.length))}
+      <div class="rows">${filmo.directing.map(simpleRow).join('')}</div>
+    ` : ''}
+
+    ${filmo.writing.length ? `
+      ${secHead('03', 'Scenaristički radovi', filmo.writing.length + ' ' + pluralNaslov(filmo.writing.length))}
+      <div class="rows">${filmo.writing.map(simpleRow).join('')}</div>
+    ` : ''}
+  `;
+}
+
+/* ============================================================
+   12. TITLE DETAIL
+   ============================================================ */
+function viewTitle(id){
+  const t = getTitle(id);
+  if (!t) return notFound('Naslov nije pronađen', 'Traženi film ili serija ne postoji u arhivi.');
+
+  const order = { 'Glavna uloga':0, 'Sporedna uloga':1, 'Epizodna uloga':2, 'Gost':3 };
+  const cast = (t.cast || []).slice().sort((a,b) => (order[a.role]||9) - (order[b.role]||9));
+
+  const facts = [];
+  facts.push(`<div class="fact"><dt>${t.type === 'film' ? 'Godina' : 'Period'}</dt><dd>${esc(yearsLabel(t))}</dd></div>`);
+  if (t.type === 'film' && t.runtime) facts.push(`<div class="fact"><dt>Trajanje</dt><dd>${esc(t.runtime)} min</dd></div>`);
+  if (t.rating) facts.push(`<div class="fact"><dt>Ocena</dt><dd>&#9733; ${Number(t.rating).toFixed(1)}</dd></div>`);
+
+  const directorNames = (t.directors || []).map(pid => {
+    const p = getPerson(pid);
+    return p ? `<a href="#/person/${p.id}">${esc(p.name)}</a>` : null;
+  }).filter(Boolean);
+
+  const screenwriterNames = (t.screenwriters || []).map(pid => {
+    const p = getPerson(pid);
+    return p ? `<a href="#/person/${p.id}">${esc(p.name)}</a>` : null;
+  }).filter(Boolean);
+
+  const crewHtml = `
+    <div class="crew-list">
+      ${directorNames.length ? `
+        <div class="crew-item">
+          <div class="crew-label">Reditelj${directorNames.length > 1 ? 'i' : ''}</div>
+          <div class="crew-name">${directorNames.join(', ')}</div>
+        </div>` : ''}
+      ${screenwriterNames.length ? `
+        <div class="crew-item">
+          <div class="crew-label">Scenarista${screenwriterNames.length > 1 ? 'e' : ''}</div>
+          <div class="crew-name">${screenwriterNames.join(', ')}</div>
+        </div>` : ''}
+    </div>`;
+
+  const castRow = c => {
+    const p = getPerson(c.personId);
+    if (!p) return '';
+    return `
+      <div class="cast-row">
+        <div class="cast-portrait" data-img-key="person_${p.id}" style="--h:${hueFor(p.name)}">
+          <span>${esc(initials(p.name))}</span>
+        </div>
+        <div class="cast-name">
+          <a href="#/person/${p.id}">${esc(p.name)}</a>
+          <span class="cast-char">${c.character ? 'kao ' + esc(c.character) : 'uloga nije navedena'}</span>
+        </div>
+        <div class="cast-side">
+          <span class="${roleClass(c.role)}">${esc(c.role || 'Uloga')}</span>
+          <button class="btn bare" data-action="credit-remove" data-title="${t.id}" data-person="${p.id}" title="Ukloni ulogu">&#10005;</button>
+        </div>
+      </div>`;
+  };
+
+  const seasonsHtml = t.type === 'series' && (t.seasons || []).length
+    ? `<div class="seasons-display">${(t.seasons || []).map(s => `
+        <details class="season-box" ${s.number === 1 ? 'open' : ''}>
+          <summary>
+            <span>Sezona ${esc(s.number)}</span>
+            <span class="count">${(s.episodes || []).length} ${pluralEpizoda((s.episodes || []).length)}</span>
+          </summary>
+          <div class="episodes-list-display">
+            ${(s.episodes || []).length
+              ? (s.episodes || []).map(e => `
+                <div class="episode-line">
+                  <span class="ep-num-display">${esc(e.number)}.</span>
+                  <span class="ep-title-display">${esc(e.title || '(bez naslova)')}</span>
+                  <span class="ep-date-display">${esc(e.airdate ? fmtDate(e.airdate) : '—')}</span>
+                </div>`).join('')
+              : '<div class="hint">Nema unetih epizoda.</div>'}
+          </div>
+        </details>`).join('')}</div>`
+    : '';
+
+  return `
+    <div class="title-hero">
+      <div class="th-poster" data-img-key="title_${t.id}" style="--h:${hueFor(t.title)}">
+        <span>${esc(initials(t.title))}</span>
+      </div>
+      <div class="th-body">
+        <div class="kicker">${t.type === 'film' ? 'Film' : 'Serija'} &middot; ${esc(yearsLabel(t))}</div>
+        <h1>${esc(t.title)}</h1>
+        <div class="genre-line">${esc((t.genres||[]).join(' &nbsp;/&nbsp; ') || 'Žanr nije naveden')}</div>
+        ${t.synopsis ? `<p class="lede">${esc(t.synopsis)}</p>` : ''}
+        <div class="facts">${facts.join('')}</div>
+        <div class="btn-row">
+          <button class="btn" data-action="title-edit" data-id="${t.id}">Uredi naslov</button>
+          <button class="btn blue" data-action="credit-add-title" data-id="${t.id}">+ Dodaj ulogu</button>
+          <button class="btn outline-red" data-action="title-delete" data-id="${t.id}">Obriši</button>
+        </div>
+      </div>
+    </div>
+
+    ${(directorNames.length || screenwriterNames.length) ? `
+      ${secHead('01', 'Ekipa')}
+      ${crewHtml}
+    ` : ''}
+
+    ${secHead((directorNames.length || screenwriterNames.length) ? '02' : '01', 'Uloge', cast.length + ' ' + pluralUloga(cast.length))}
+    ${cast.length
+      ? `<div>${cast.map(castRow).join('')}</div>`
+      : emptyBlock('&#9671;', 'Nema uloga', 'Nijedna osoba još nije povezana sa ovim naslovom.',
+          `<button class="btn blue" data-action="credit-add-title" data-id="${t.id}">+ Dodaj ulogu</button>`)}
+
+    ${t.type === 'series' ? `
+      ${secHead('03', 'Sezone i epizode', (t.seasons || []).length + ' ' + (t.seasons && t.seasons.length === 1 ? 'sezona' : 'sezona'))}
+      ${seasonsHtml || emptyBlock('&#9671;', 'Nema sezona', 'Dodajte sezone i epizode putem uređivanja naslova.',
+          `<button class="btn" data-action="title-edit" data-id="${t.id}">Uredi naslov</button>`)}
+    ` : ''}
+  `;
+}
+
+/* ============================================================
+   13. SEARCH
+   ============================================================ */
+function viewSearch(query){
+  const q = String(query || '').trim().toLowerCase();
+  let titles = [], people = [];
+  if (q){
+    titles = db.titles.filter(t => {
+      const directorsNames = (t.directors||[]).map(id => getPerson(id)?.name || '').join(' ');
+      const screenwritersNames = (t.screenwriters||[]).map(id => getPerson(id)?.name || '').join(' ');
+      const castNames = (t.cast||[]).map(c => getPerson(c.personId)?.name || '').join(' ');
+      return [t.title, directorsNames, screenwritersNames, castNames, (t.genres||[]).join(' '), t.synopsis]
+        .join(' ').toLowerCase().indexOf(q) !== -1;
+    });
+    people = db.people.filter(p =>
+      (p.name + ' ' + (p.birthPlace||'') + ' ' + (p.bio||'') + ' ' + (p.occupations||[]).join(' '))
+        .toLowerCase().indexOf(q) !== -1);
+  }
+  return `
+    <div class="page-head">
+      <div><h1>Rezultati pretrage</h1><div class="sub">Pojam: <b>${esc(query || '—')}</b></div></div>
+      <a class="btn" href="#/">Nazad</a>
+    </div>
+    ${secHead('01', 'Naslovi', titles.length + ' ' + pluralNaslov(titles.length))}
+    ${titles.length ? `<div class="grid">${titles.map(titleCard).join('')}</div>`
+      : emptyBlock('&#9671;', 'Nema pronađenih naslova', 'Pokušajte sa drugim pojmom.')}
+    ${secHead('02', 'Osobe', people.length + ' ' + pluralOsoba(people.length))}
+    ${people.length ? `<div class="grid people">${people.map(personCard).join('')}</div>`
+      : emptyBlock('&#9671;', 'Nema pronađenih osoba', 'Pokušajte sa drugim imenom.')}
+  `;
+}
+
+/* ============================================================
+   14. STATS
+   ============================================================ */
+function viewStats(){
+  const films  = db.titles.filter(t => t.type === 'film');
+  const series = db.titles.filter(t => t.type === 'series');
+  const roles  = db.titles.reduce((s,t) => s + (t.cast ? t.cast.length : 0), 0);
+  const episodesCount = series.reduce((sum, s) => sum + (s.seasons||[]).reduce((x, se) => x + (se.episodes||[]).length, 0), 0);
+
+  const rated = db.titles.filter(t => t.rating > 0);
+  const avg = rated.length ? (rated.reduce((s,t) => s + Number(t.rating), 0) / rated.length) : 0;
+
+  const gCount = {};
+  db.titles.forEach(t => (t.genres||[]).forEach(g => { gCount[g] = (gCount[g]||0) + 1; }));
+  const gList = Object.keys(gCount).map(g => ({ name:g, n:gCount[g] })).sort((a,b) => b.n - a.n);
+  const gMax = gList.length ? gList[0].n : 1;
+
+  const topPeople = db.people.map(p => {
+    const f = filmographyFor(p.id);
+    return { p, n: f.acting.length + f.directing.length + f.writing.length };
+  }).filter(x => x.n > 0).sort((a,b) => b.n - a.n).slice(0, 10);
+
+  return `
+    <div class="page-head">
+      <div><h1>Statistika</h1><div class="sub">Presek stanja u arhivi</div></div>
+    </div>
+    <div class="numbers">
+      <div class="num"><b>${films.length}</b><span>Filmova</span></div>
+      <div class="num"><b>${series.length}</b><span>Serija</span></div>
+      <div class="num"><b>${episodesCount}</b><span>Epizoda</span></div>
+      <div class="num"><b>${db.people.length}</b><span>Osoba</span></div>
+      <div class="num"><b>${roles}</b><span>Uloga</span></div>
+      <div class="num"><b>${avg ? avg.toFixed(1) : '—'}</b><span>Prosečna ocena</span></div>
+    </div>
+    ${secHead('01', 'Zastupljenost žanrova', gList.length + ' žanrova')}
+    ${gList.length
+      ? `<div class="ledger">${gList.map(g => `
+          <div class="ledger-row">
+            <div>
+              <div class="l-name">${esc(g.name)}</div>
+              <div class="gbar"><i style="width:${Math.max(5, Math.round(g.n / gMax * 100))}%"></i></div>
+            </div>
+            <div class="l-count">${g.n}</div>
+          </div>`).join('')}</div>`
+      : emptyBlock('&#9671;', 'Nema podataka', 'Dodajte naslove sa žanrovima.')}
+    ${secHead('02', 'Najangažovanije osobe', topPeople.length + ' prikaza')}
+    ${topPeople.length
+      ? `<div class="ledger">${topPeople.map(x => `
+          <div class="ledger-row">
+            <div><a class="l-name" href="#/person/${x.p.id}">${esc(x.p.name)}</a></div>
+            <div class="l-count">${x.n} ${pluralUloga(x.n)}</div>
+          </div>`).join('')}</div>`
+      : emptyBlock('&#9671;', 'Nema podataka', 'Dodajte uloge osobama.')}
+  `;
+}
+
+/* ============================================================
+   15. ABOUT
+   ============================================================ */
+function viewAbout(){
+  const size = Math.round(JSON.stringify(db).length / 1024);
+  return `
+    <div class="page-head">
+      <div><h1>O bazi</h1><div class="sub">Kako arhiva funkcioniše</div></div>
+    </div>
+    <p class="lede" style="margin-bottom:26px">
+      Lična arhiva srpskih filmova, serija i glumaca. Podaci se čuvaju isključivo u vašem pregledaču.
+      Klikom na osobu otvarate njenu filmografiju, a klikom na naslov kompletnu ekipu i (za serije) sezone sa epizodama.
+      Slike se automatski kompresuju i čuvaju u IndexedDB, tako da ostaju sačuvane i posle zatvaranja stranice.
+    </p>
+    <div class="ledger">
+      <div class="ledger-row"><div><div class="l-name">Tekstualni podaci</div></div><div class="l-count">localStorage</div></div>
+      <div class="ledger-row"><div><div class="l-name">Slike</div></div><div class="l-count">IndexedDB</div></div>
+      <div class="ledger-row"><div><div class="l-name">Verzija baze</div></div><div class="l-count">${esc(db.meta.version || 3)}</div></div>
+      <div class="ledger-row"><div><div class="l-name">Broj naslova</div></div><div class="l-count">${db.titles.length}</div></div>
+      <div class="ledger-row"><div><div class="l-name">Broj osoba</div></div><div class="l-count">${db.people.length}</div></div>
+      <div class="ledger-row"><div><div class="l-name">Veličina teksta</div></div><div class="l-count">${size} KB</div></div>
+    </div>
+    ${secHead('01', 'Slike i prostor')}
+    <div class="ledger" id="storageInfo">
+      <div class="ledger-row"><div><div class="l-name">Učitavam…</div></div><div class="l-count">—</div></div>
+    </div>
+    <div class="hint" style="margin-top:12px">
+      Slike se automatski smanjuju (do 640px) i kompresuju u JPEG.
+    </div>
+    ${secHead('02', 'Upravljanje bazom')}
+    <div class="btn-row">
+      <button class="btn solid" data-action="title-new" data-type="film">+ Dodaj film</button>
+      <button class="btn blue" data-action="title-new" data-type="series">+ Dodaj seriju</button>
+      <button class="btn" data-action="person-new">+ Dodaj osobu</button>
+      <button class="btn" data-action="export">Izvoz JSON</button>
+      <button class="btn" data-action="import">Uvoz JSON</button>
+      <button class="btn outline-red" data-action="clear">Obriši sve</button>
+    </div>
+    <div class="hint" style="margin-top:14px">
+      Izvoz uključuje i slike (base64), pa fajl može biti veći ako u bazi ima mnogo slika.
+    </div>
+  `;
+}
+
+/* ============================================================
+   16. MODAL
+   ============================================================ */
+function showModal(opts){
+  const root = document.getElementById('modalRoot');
+  root.innerHTML = `
+    <div class="modal-backdrop" data-backdrop>
+      <div class="modal" role="dialog" aria-modal="true">
+        <div class="modal-head">
+          <h2>${esc(opts.title)}</h2>
+          <button type="button" class="modal-x" data-close aria-label="Zatvori">&#10005;</button>
+        </div>
+        <form id="modalForm" novalidate>
+          <div class="modal-body">${opts.body}</div>
+          <div class="modal-foot">
+            <button type="button" class="btn" data-close>Otkaži</button>
+            <button type="submit" class="btn solid">${esc(opts.submitLabel || 'Sačuvaj')}</button>
+          </div>
+        </form>
+      </div>
+    </div>`;
+  root.classList.add('open');
+
+  root.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeModal));
+  const backdrop = root.querySelector('[data-backdrop]');
+  backdrop.addEventListener('click', e => { if (e.target === backdrop) closeModal(); });
+
+  const form = document.getElementById('modalForm');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = form.querySelector('button[type=submit]');
+    if (btn.disabled) return;
+    btn.disabled = true;
+    try{ await opts.onSubmit(form); }
+    catch(err){ console.error(err); toast('Greška: ' + (err && err.message ? err.message : 'nepoznato'), 'error'); }
+    finally{ btn.disabled = false; }
+  });
+
+  if (opts.onReady) opts.onReady(form);
+  const first = form.querySelector('input, select, textarea');
+  if (first) setTimeout(() => first.focus(), 60);
+}
+function closeModal(){
+  const root = document.getElementById('modalRoot');
+  root.classList.remove('open');
+  root.innerHTML = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+/* ============================================================
+   17. IMAGE PICKER
+   ============================================================ */
+function imagePickerMarkup(key, kind){
+  const cls = kind === 'poster' ? 'img-preview poster' : 'img-preview';
+  return `
+    <div class="img-field">
+      <span class="lab">Slika</span>
+      <div class="img-picker">
+        <div class="${cls}" id="imgPreview" ${key ? `data-preview-key="${key}"` : ''}></div>
+        <div class="img-picker-actions">
+          <button type="button" class="btn tiny" id="imgPick">Izaberi sliku</button>
+          <button type="button" class="btn tiny outline-red" id="imgClear">Ukloni sliku</button>
+          <div class="hint">JPG, PNG ili WebP. Automatski se smanjuje i kompresuje.</div>
+        </div>
+      </div>
+      <input type="file" id="imgFile" accept="image/*" hidden>
+    </div>`;
+}
+
+function bindImagePicker(pending){
+  const preview = document.getElementById('imgPreview');
+  const pickBtn = document.getElementById('imgPick');
+  const clearBtn = document.getElementById('imgClear');
+  const fileInput = document.getElementById('imgFile');
+  if (!preview || !pickBtn || !clearBtn || !fileInput) return;
+
+  if (pending.initialKey){
+    getImageURL(pending.initialKey).then(url => {
+      if (!url) return;
+      preview.style.backgroundImage = `url("${url}")`;
+      preview.classList.add('has-img');
+    });
+  }
+
+  pickBtn.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    try{
+      const blob = await compressImage(file, 640, 0.82);
+      pending.current = blob;
+      pending.removed = false;
+      if (pending.previewURL){ try{ URL.revokeObjectURL(pending.previewURL); }catch(err){} }
+      pending.previewURL = URL.createObjectURL(blob);
+      preview.style.backgroundImage = `url("${pending.previewURL}")`;
+      preview.classList.add('has-img');
+      toast('Slika je spremna (' + fmtBytes(blob.size) + ')', 'info');
+    }catch(err){
+      toast(err.message || 'Ne mogu da obradim sliku', 'error');
+    }
+    fileInput.value = '';
+  });
+  clearBtn.addEventListener('click', () => {
+    pending.current = null;
+    pending.removed = true;
+    if (pending.previewURL){ try{ URL.revokeObjectURL(pending.previewURL); }catch(err){} pending.previewURL = null; }
+    preview.style.backgroundImage = '';
+    preview.classList.remove('has-img');
+  });
+}
+
+async function applyPendingImageToKey(pending, key){
+  try{
+    if (pending.removed){ await deleteImage(key); invalidateImageURL(key); return; }
+    if (pending.current){
+      await putImage(key, pending.current);
+      invalidateImageURL(key);
+      await refreshKnownImageKeys();
+    }
+  }catch(err){
+    console.error(err);
+    if (err && (err.name === 'QuotaExceededError' || /quota/i.test(String(err.message || '')))){
+      toast('Nema dovoljno prostora za sliku. Obrišite neke slike.', 'error');
+    } else {
+      toast('Slika nije sačuvana: ' + (err && err.message ? err.message : 'greška'), 'error');
+    }
+    throw err;
+  }
+}
+
+/* ============================================================
+   18. CAST EDITOR (inside forms)
+   ============================================================ */
+function castRowMarkup(name, character, role){
+  const roles = ['Glavna uloga', 'Sporedna uloga', 'Epizodna uloga', 'Gost'];
+  return `
+    <div class="cast-item" data-cast-item>
+      <input class="inp cast-name" placeholder="Ime glumca" value="${esc(name || '')}">
+      <input class="inp cast-character" placeholder="Lik" value="${esc(character || '')}">
+      <select class="sel cast-role">
+        ${roles.map(r => `<option${r === (role || 'Glavna uloga') ? ' selected' : ''}>${r}</option>`).join('')}
+      </select>
+      <button type="button" class="btn bare" data-remove-cast title="Ukloni">&#10005;</button>
+    </div>`;
+}
+
+function bindCastEditor(form){
+  const editor = form.querySelector('[data-cast]');
+  const addBtn = form.querySelector('[data-add-cast]');
+  if (!editor || !addBtn) return;
+
+  addBtn.addEventListener('click', () => {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = castRowMarkup('', '', 'Glavna uloga').trim();
+    editor.appendChild(tmp.firstChild);
+  });
+
+  editor.addEventListener('click', e => {
+    const btn = e.target.closest('[data-remove-cast]');
+    if (!btn) return;
+    const row = btn.closest('[data-cast-item]');
+    if (row) row.remove();
+  });
+}
+
+function readCast(form){
+  const items = [...form.querySelectorAll('[data-cast-item]')];
+  return items.map(item => ({
+    name: (item.querySelector('.cast-name').value || '').trim(),
+    character: (item.querySelector('.cast-character').value || '').trim(),
+    role: item.querySelector('.cast-role').value || 'Glavna uloga'
+  })).filter(c => c.name);
+}
+
+/* ============================================================
+   19. SEASONS EDITOR (inside forms)
+   ============================================================ */
+function episodeRowMarkup(number, title, airdate){
+  return `
+    <div class="episode-row" data-episode>
+      <input class="ep-num" type="number" min="1" value="${esc(number || 1)}">
+      <input class="ep-title" type="text" placeholder="Naslov epizode" value="${esc(title || '')}">
+      <input class="ep-airdate" type="date" value="${esc(airdate || '')}">
+      <button type="button" class="btn bare" data-remove-episode title="Ukloni">&#10005;</button>
+    </div>`;
+}
+
+function seasonBlockMarkup(number, episodes){
+  const eps = episodes || [];
+  return `
+    <div class="season-block" data-season>
+      <div class="season-head">
+        <span class="season-label">Sezona</span>
+        <input class="season-num" type="number" min="1" value="${esc(number || 1)}">
+        <span class="spacer"></span>
+        <button type="button" class="btn tiny bare" data-remove-season title="Ukloni sezonu">Ukloni sezonu</button>
+      </div>
+      <div class="episodes-list" data-episodes>
+        ${eps.map(e => episodeRowMarkup(e.number, e.title, e.airdate)).join('')}
+      </div>
+      <button type="button" class="btn tiny" data-add-episode>+ Dodaj epizodu</button>
+    </div>`;
+}
+
+function bindSeasonsEditor(form){
+  const editor = form.querySelector('[data-seasons]');
+  const addSeasonBtn = form.querySelector('[data-add-season]');
+  if (!editor || !addSeasonBtn) return;
+
+  addSeasonBtn.addEventListener('click', () => {
+    const existing = editor.querySelectorAll('[data-season]').length;
+    const tmp = document.createElement('div');
+    tmp.innerHTML = seasonBlockMarkup(existing + 1, []).trim();
+    editor.appendChild(tmp.firstChild);
+  });
+
+  editor.addEventListener('click', e => {
+    const addEp = e.target.closest('[data-add-episode]');
+    if (addEp){
+      const block = addEp.closest('[data-season]');
+      const list = block.querySelector('[data-episodes]');
+      const count = list.querySelectorAll('[data-episode]').length;
+      const tmp = document.createElement('div');
+      tmp.innerHTML = episodeRowMarkup(count + 1, '', '').trim();
+      list.appendChild(tmp.firstChild);
+      return;
+    }
+    const rmSeason = e.target.closest('[data-remove-season]');
+    if (rmSeason){
+      const block = rmSeason.closest('[data-season]');
+      if (window.confirm('Ukloniti ovu sezonu i sve njene epizode?')) block.remove();
+      return;
+    }
+    const rmEp = e.target.closest('[data-remove-episode]');
+    if (rmEp){
+      const row = rmEp.closest('[data-episode]');
+      if (row) row.remove();
+    }
+  });
+}
+
+function readSeasons(form){
+  const seasons = [];
+  form.querySelectorAll('[data-season]').forEach(sEl => {
+    const number = Number(sEl.querySelector('.season-num').value) || 1;
+    const episodes = [];
+    sEl.querySelectorAll('[data-episode]').forEach(eEl => {
+      episodes.push({
+        number: Number(eEl.querySelector('.ep-num').value) || 1,
+        title: (eEl.querySelector('.ep-title').value || '').trim(),
+        airdate: eEl.querySelector('.ep-airdate').value || ''
+      });
+    });
+    seasons.push({ number, episodes });
+  });
+  return seasons;
+}
+
+/* ============================================================
+   20. PERSON FORM
+   ============================================================ */
+function openPersonForm(id){
+  const p = id ? getPerson(id) : null;
+  const initialKey = p ? 'person_' + p.id : null;
+  const pending = { current: null, initialKey, removed: false, previewURL: null };
+
+  const occChecks = OCCUPATIONS.map(o => `
+    <label class="occ-check">
+      <input type="checkbox" name="occ" value="${esc(o)}" ${(p && (p.occupations || []).includes(o)) ? 'checked' : ''}>
+      <span>${esc(o)}</span>
+    </label>`).join('');
+
+  const body = `
+    <label class="field">
+      <span class="lab">Ime i prezime *</span>
+      <input class="inp" name="name" required value="${esc(p ? p.name : '')}" placeholder="npr. Danilo Bata Stojković">
+    </label>
+    <div class="row-2">
+      <label class="field">
+        <span class="lab">Datum rođenja</span>
+        <input class="inp" name="birthDate" type="date" value="${esc(p ? p.birthDate : '')}">
+      </label>
+      <label class="field">
+        <span class="lab">Mesto rođenja</span>
+        <input class="inp" name="birthPlace" value="${esc(p ? p.birthPlace : '')}" placeholder="Beograd">
+      </label>
+    </div>
+    <div class="field">
+      <span class="lab">Zanimanja</span>
+      <div class="occ-checks">${occChecks}</div>
+      <div class="hint">Označite sve što važi.</div>
+    </div>
+    <label class="field">
+      <span class="lab">Biografija</span>
+      <textarea class="area" name="bio" placeholder="Kratka biografija…">${esc(p ? p.bio : '')}</textarea>
+    </label>
+    ${imagePickerMarkup(initialKey, 'portrait')}
+  `;
+
+  showModal({
+    title: p ? 'Uredi osobu' : 'Nova osoba',
+    body,
+    submitLabel: p ? 'Sačuvaj izmene' : 'Dodaj osobu',
+    onReady(){ bindImagePicker(pending); },
+    async onSubmit(form){
+      const d = new FormData(form);
+      const name = String(d.get('name') || '').trim();
+      if (!name){ toast('Ime je obavezno', 'error'); return; }
+
+      const occupations = [...form.querySelectorAll('input[name=occ]:checked')].map(c => c.value);
+
+      let targetId;
+      if (p){
+        p.name = name;
+        p.birthDate = String(d.get('birthDate') || '').trim();
+        p.birthPlace = String(d.get('birthPlace') || '').trim();
+        p.occupations = occupations;
+        p.bio = String(d.get('bio') || '').trim();
+        targetId = p.id;
+      } else {
+        const newP = {
+          id: db.meta.nextPersonId++,
+          name: name,
+          birthDate: String(d.get('birthDate') || '').trim(),
+          birthPlace: String(d.get('birthPlace') || '').trim(),
+          occupations: occupations,
+          bio: String(d.get('bio') || '').trim()
+        };
+        db.people.push(newP);
+        targetId = newP.id;
+      }
+
+      try{ await applyPendingImageToKey(pending, 'person_' + targetId); }catch(err){}
+
+      saveDB();
+      toast(p ? 'Osoba je ažurirana' : 'Osoba je dodata');
+      if (pending.previewURL) try{ URL.revokeObjectURL(pending.previewURL); }catch(e){}
+      closeModal();
+      render();
+    }
+  });
+}
+
+/* Add extra styles for occupation checkboxes */
+const styleExtra = document.createElement('style');
+styleExtra.textContent = `
+.occ-checks{ display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:8px 14px; }
+.occ-check{ display:flex; align-items:center; gap:8px; font-size:14px; cursor:pointer; }
+.occ-check input{ accent-color:var(--red); width:16px; height:16px; }
+`;
+document.head.appendChild(styleExtra);
+
+/* ============================================================
+   21. TITLE FORM
+   ============================================================ */
+function openTitleForm(id, presetType){
+  const t = id ? getTitle(id) : null;
+  const type = t ? t.type : (presetType || 'film');
+  const isSeries = type === 'series';
+  const initialKey = t ? 'title_' + t.id : null;
+  const pending = { current: null, initialKey, removed: false, previewURL: null };
+
+  const directorsStr = t ? (t.directors || []).map(id => getPerson(id)?.name).filter(Boolean).join(', ') : '';
+  const screenwritersStr = t ? (t.screenwriters || []).map(id => getPerson(id)?.name).filter(Boolean).join(', ') : '';
+
+  const castRowsHtml = (t ? (t.cast || []) : []).map(c => {
+    const p = getPerson(c.personId);
+    return castRowMarkup(p ? p.name : '', c.character, c.role);
+  }).join('');
+
+  const seasonsHtml = isSeries
+    ? (t && t.seasons ? t.seasons : []).map(s => seasonBlockMarkup(s.number, s.episodes)).join('')
+    : '';
+
+  const body = `
+    <label class="field">
+      <span class="lab">Naslov *</span>
+      <input class="inp" name="title" required value="${esc(t ? t.title : '')}" placeholder="npr. Ko to tamo peva">
+    </label>
+
+    <div class="row-2">
+      <label class="field">
+        <span class="lab">${isSeries ? 'Godina početka' : 'Godina'} *</span>
+        <input class="inp" name="year" type="number" min="1880" max="2100" required value="${esc(t ? t.year : '')}" placeholder="1980">
+      </label>
+      ${isSeries ? `
+        <label class="field">
+          <span class="lab">Godina završetka</span>
+          <input class="inp" name="endYear" type="number" min="1880" max="2100" value="${esc(t ? t.endYear : '')}" placeholder="1984">
+        </label>
+      ` : `
+        <label class="field">
+          <span class="lab">Trajanje (min)</span>
+          <input class="inp" name="runtime" type="number" min="1" max="600" value="${esc(t ? t.runtime : '')}" placeholder="86">
+        </label>
+      `}
+    </div>
+
+    <div class="row-2">
+      <label class="field">
+        <span class="lab">Žanrovi (odvojeni zarezom)</span>
+        <input class="inp" name="genres" value="${esc(t ? (t.genres||[]).join(', ') : '')}" placeholder="Komedija, Drama">
+      </label>
+      <label class="field">
+        <span class="lab">Ocena (0–10)</span>
+        <input class="inp" name="rating" type="number" min="0" max="10" step="0.1" value="${esc(t ? t.rating : '')}" placeholder="8.5">
+      </label>
+    </div>
+
+    <label class="field">
+      <span class="lab">Sinopsis</span>
+      <textarea class="area" name="synopsis" placeholder="Kratak opis radnje…">${esc(t ? t.synopsis : '')}</textarea>
+    </label>
+
+    ${imagePickerMarkup(initialKey, 'poster')}
+
+    <label class="field">
+      <span class="lab">Reditelj(i)</span>
+      <input class="inp" name="directors" value="${esc(directorsStr)}" placeholder="Ime, ime, ime">
+      <div class="hint">Odvojeno zarezom. Nepoznate osobe se automatski dodaju u bazu.</div>
+    </label>
+
+    <label class="field">
+      <span class="lab">Scenarista/e</span>
+      <input class="inp" name="screenwriters" value="${esc(screenwritersStr)}" placeholder="Ime, ime, ime">
+      <div class="hint">Odvojeno zarezom. Nepoznate osobe se automatski dodaju u bazu.</div>
+    </label>
+
+    <div class="field">
+      <span class="lab">Uloge</span>
+      <div class="cast-editor" data-cast>
+        ${castRowsHtml}
+      </div>
+      <button type="button" class="btn tiny" data-add-cast style="margin-top:8px">+ Dodaj ulogu</button>
+      <div class="hint">Nepoznate osobe se automatski dodaju u bazu kao glumci.</div>
+    </div>
+
+    ${isSeries ? `
+      <div class="field">
+        <span class="lab">Sezone i epizode</span>
+        <div class="seasons-editor" data-seasons>
+          ${seasonsHtml}
+        </div>
+        <button type="button" class="btn tiny" data-add-season style="margin-top:8px">+ Dodaj sezonu</button>
+      </div>
+    ` : ''}
+  `;
+
+  showModal({
+    title: t ? 'Uredi naslov' : (isSeries ? 'Nova serija' : 'Novi film'),
+    body,
+    submitLabel: t ? 'Sačuvaj izmene' : 'Dodaj naslov',
+    onReady(form){
+      bindImagePicker(pending);
+      bindCastEditor(form);
+      if (isSeries) bindSeasonsEditor(form);
+    },
+    async onSubmit(form){
+      const d = new FormData(form);
+      const name = String(d.get('title') || '').trim();
+      const year = String(d.get('year') || '').trim();
+      if (!name){ toast('Naslov je obavezan', 'error'); return; }
+      if (!year){ toast('Godina je obavezna', 'error'); return; }
+
+      const genresRaw = String(d.get('genres') || '').trim();
+      const genres = genresRaw ? genresRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+      const directorNames = splitNames(d.get('directors'));
+      const screenwriterNames = splitNames(d.get('screenwriters'));
+      const castItems = readCast(form);
+
+      const dirRes = resolvePeople(directorNames, 'Reditelj/ka');
+      const scrRes = resolvePeople(screenwriterNames, 'Scenarista');
+      const created = [...dirRes.created, ...scrRes.created];
+
+      const castResolved = [];
+      const castCreated = [];
+      castItems.forEach(item => {
+        const r = resolvePeople([item.name], 'Glumac/ica');
+        if (r.ids.length){
+          castResolved.push({ personId: r.ids[0], character: item.character, role: item.role });
+          if (r.created.length) castCreated.push(...r.created);
+        }
+      });
+      created.push(...castCreated);
+
+      const seasons = isSeries ? readSeasons(form) : [];
+
+      const payload = {
+        type: type,
+        title: name,
+        year: year,
+        endYear: isSeries ? String(d.get('endYear') || '').trim() : '',
+        runtime: !isSeries ? String(d.get('runtime') || '').trim() : '',
+        genres: genres,
+        rating: num(d.get('rating'), 0),
+        synopsis: String(d.get('synopsis') || '').trim(),
+        directors: dirRes.ids,
+        screenwriters: scrRes.ids,
+        cast: castResolved,
+        seasons: seasons
+      };
+
+      let targetId;
+      if (t){
+        Object.assign(t, payload);
+        targetId = t.id;
+      } else {
+        const newT = Object.assign({ id: db.meta.nextTitleId++ }, payload);
+        db.titles.push(newT);
+        targetId = newT.id;
+      }
+
+      try{ await applyPendingImageToKey(pending, 'title_' + targetId); }catch(err){}
+
+      saveDB();
+
+      if (created.length){
+        toast('Kreirano ' + created.length + ' novih osoba. Uredite ih u sekciji Osobe.', 'info');
+      } else {
+        toast(t ? 'Naslov je ažuriran' : 'Naslov je dodat');
+      }
+
+      if (pending.previewURL) try{ URL.revokeObjectURL(pending.previewURL); }catch(e){}
+      closeModal();
+      render();
+    }
+  });
+}
+
+/* ============================================================
+   22. CREDIT FORMS
+   ============================================================ */
+function openCreditForm(titleId){
+  const t = getTitle(titleId);
+  if (!t) return;
+  if (!db.people.length){
+    toast('Prvo dodajte osobu', 'error');
+    openPersonForm(null);
+    return;
+  }
+  const opts = db.people.slice().sort((a,b) => a.name.localeCompare(b.name,'sr'))
+    .map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
+
+  const body = `
+    <p class="lede" style="margin-bottom:20px">Nova uloga za naslov: <b>${esc(t.title)}</b></p>
+    <label class="field">
+      <span class="lab">Osoba *</span>
+      <select class="sel" name="personId" required>${opts}</select>
+    </label>
+    <div class="row-2">
+      <label class="field">
+        <span class="lab">Lik</span>
+        <input class="inp" name="character" placeholder="npr. Brka">
+      </label>
+      <label class="field">
+        <span class="lab">Tip uloge</span>
+        <select class="sel" name="role">
+          <option value="Glavna uloga">Glavna uloga</option>
+          <option value="Sporedna uloga">Sporedna uloga</option>
+          <option value="Epizodna uloga">Epizodna uloga</option>
+          <option value="Gost">Gost</option>
+        </select>
+      </label>
+    </div>`;
+
+  showModal({
+    title: 'Dodaj ulogu',
+    body,
+    submitLabel: 'Dodaj ulogu',
+    async onSubmit(form){
+      const d = new FormData(form);
+      const pid = Number(d.get('personId'));
+      if (!pid){ toast('Izaberite osobu', 'error'); return; }
+      if (!t.cast) t.cast = [];
+      if (t.cast.some(c => String(c.personId) === String(pid))){
+        toast('Ova osoba već ima ulogu', 'error'); return;
+      }
+      t.cast.push({
+        personId: pid,
+        character: String(d.get('character') || '').trim(),
+        role: String(d.get('role') || 'Glavna uloga')
+      });
+      saveDB();
+      closeModal();
+      toast('Uloga je dodata');
+      render();
+    }
+  });
+}
+
+function openCreditForPerson(personId){
+  const p = getPerson(personId);
+  if (!p) return;
+  if (!db.titles.length){
+    toast('Prvo dodajte naslov', 'error');
+    openTitleForm(null, 'film');
+    return;
+  }
+  const opts = db.titles.slice().sort((a,b) => (b.year||0)-(a.year||0))
+    .map(t => `<option value="${t.id}">${esc(t.title)} (${esc(yearsLabel(t))})</option>`).join('');
+
+  const body = `
+    <p class="lede" style="margin-bottom:20px">Nova uloga za osobu: <b>${esc(p.name)}</b></p>
+    <label class="field">
+      <span class="lab">Naslov *</span>
+      <select class="sel" name="titleId" required>${opts}</select>
+    </label>
+    <div class="row-2">
+      <label class="field">
+        <span class="lab">Lik</span>
+        <input class="inp" name="character" placeholder="npr. Petar Petrović">
+      </label>
+      <label class="field">
+        <span class="lab">Tip uloge</span>
+        <select class="sel" name="role">
+          <option value="Glavna uloga">Glavna uloga</option>
+          <option value="Sporedna uloga">Sporedna uloga</option>
+          <option value="Epizodna uloga">Epizodna uloga</option>
+          <option value="Gost">Gost</option>
+        </select>
+      </label>
+    </div>`;
+
+  showModal({
+    title: 'Dodaj ulogu osobi',
+    body,
+    submitLabel: 'Dodaj ulogu',
+    async onSubmit(form){
+      const d = new FormData(form);
+      const tid = Number(d.get('titleId'));
+      const t = getTitle(tid);
+      if (!t){ toast('Izaberite naslov', 'error'); return; }
+      if (!t.cast) t.cast = [];
+      if (t.cast.some(c => String(c.personId) === String(personId))){
+        toast('Ova osoba već ima ulogu', 'error'); return;
+      }
+      t.cast.push({
+        personId: personId,
+        character: String(d.get('character') || '').trim(),
+        role: String(d.get('role') || 'Glavna uloga')
+      });
+      saveDB();
+      closeModal();
+      toast('Uloga je dodata');
+      render();
+    }
+  });
+}
+
+/* ============================================================
+   23. DELETE
+   ============================================================ */
+async function deletePerson(id){
+  const p = getPerson(id);
+  if (!p) return;
+  if (!window.confirm(`Obrisati osobu „${p.name}"? Svi njeni zapisi biće uklonjeni iz naslova.`)) return;
+
+  db.people = db.people.filter(x => String(x.id) !== String(id));
+  db.titles.forEach(t => {
+    if (t.cast) t.cast = t.cast.filter(c => String(c.personId) !== String(id));
+    if (t.directors) t.directors = t.directors.filter(d => String(d) !== String(id));
+    if (t.screenwriters) t.screenwriters = t.screenwriters.filter(s => String(s) !== String(id));
+  });
+
+  try{ await deleteImage('person_' + id); invalidateImageURL('person_' + id); }catch(e){}
+  saveDB();
+  toast('Osoba je obrisana');
+  go('/people');
+}
+
+async function deleteTitle(id){
+  const t = getTitle(id);
+  if (!t) return;
+  if (!window.confirm(`Obrisati naslov „${t.title}"?`)) return;
+  db.titles = db.titles.filter(x => String(x.id) !== String(id));
+  try{ await deleteImage('title_' + id); invalidateImageURL('title_' + id); }catch(e){}
+  saveDB();
+  toast('Naslov je obrisan');
+  go('/films');
+}
+
+function removeCredit(titleId, personId){
+  const t = getTitle(titleId);
+  if (!t || !t.cast) return;
+  if (!window.confirm('Ukloniti ovu ulogu iz naslova?')) return;
+  t.cast = t.cast.filter(c => String(c.personId) !== String(personId));
+  saveDB();
+  toast('Uloga je uklonjena');
+  render();
+}
+
+/* ============================================================
+   24. IMPORT / EXPORT / CLEAR
+   ============================================================ */
+function blobToBase64(blob){
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = () => rej(r.error);
+    r.readAsDataURL(blob);
+  });
+}
+function base64ToBlob(dataURL){
+  return new Promise((res, rej) => {
+    try{
+      const [meta, b64] = dataURL.split(',');
+      const mime = (meta.match(/data:([^;]+);/) || [])[1] || 'image/jpeg';
+      const bin = atob(b64);
+      const arr = new Uint8Array(bin.length);
+      for (let i=0;i<bin.length;i++) arr[i] = bin.charCodeAt(i);
+      res(new Blob([arr], { type: mime }));
+    }catch(e){ rej(e); }
+  });
+}
+
+async function exportDatabase(){
+  try{
+    toast('Pripremam izvoz…', 'info');
+    const images = {};
+    const keys = await getImageKeys();
+    for (const key of keys){
+      const blob = await getImage(key);
+      if (blob){
+        try{ images[key] = await blobToBase64(blob); }catch(e){}
+      }
+    }
+    const payload = { data: db, images, exportedAt: new Date().toISOString(), formatVersion: 3 };
+    const json = JSON.stringify(payload);
+    const blob = new Blob([json], { type: 'application/json' });
+    if (blob.size > 20 * 1024 * 1024){
+      if (!window.confirm('Fajl je velik (' + fmtBytes(blob.size) + '). Nastaviti?')) return;
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'srpska-filmska-baza-' + new Date().toISOString().slice(0,10) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('Baza je izvezena (' + fmtBytes(blob.size) + ')');
+  }catch(err){
+    console.error(err);
+    toast('Greška pri izvozu: ' + (err && err.message ? err.message : 'nepoznato'), 'error');
+  }
+}
+
+async function importDatabase(file){
+  const reader = new FileReader();
+  reader.onload = async (ev) => {
+    try{
+      const parsed = JSON.parse(ev.target.result);
+      let dataPart, imagesPart = null;
+      if (parsed && parsed.data && Array.isArray(parsed.data.people) && Array.isArray(parsed.data.titles)){
+        dataPart = parsed.data; imagesPart = parsed.images || null;
+      } else if (parsed && Array.isArray(parsed.people) && Array.isArray(parsed.titles)){
+        dataPart = parsed;
+      } else {
+        toast('Neispravan format fajla', 'error'); return;
+      }
+      db = dataPart;
+      if (!db.meta) db.meta = { nextPersonId:1, nextTitleId:1, version:3 };
+      if (!db.meta.nextPersonId) db.meta.nextPersonId = db.people.reduce((m,p) => Math.max(m, Number(p.id)||0), 0) + 1;
+      if (!db.meta.nextTitleId) db.meta.nextTitleId = db.titles.reduce((m,t) => Math.max(m, Number(t.id)||0), 0) + 1;
+      saveDB();
+
+      await clearAllImages();
+      imageURLs.forEach(e => { try{ URL.revokeObjectURL(e.url); }catch(err){} });
+      imageURLs.clear();
+      knownImageKeys = new Set();
+
+      if (imagesPart){
+        let restored = 0, failed = 0;
+        for (const key of Object.keys(imagesPart)){
+          try{
+            const blob = await base64ToBlob(imagesPart[key]);
+            await putImage(key, blob);
+            restored++;
+          }catch(e){ failed++; console.warn('Image import failed', key, e); }
+        }
+        await refreshKnownImageKeys();
+        toast('Baza je uvezena. Slika: ' + restored + (failed ? ' (greške: ' + failed + ')' : ''));
+      } else {
+        toast('Baza je uvezena (bez slika)');
+      }
+      go('/');
+    }catch(err){
+      console.error(err);
+      toast('Greška pri čitanju: ' + (err && err.message ? err.message : 'nepoznato'), 'error');
+    }
+  };
+  reader.readAsText(file);
+}
+
+async function clearDatabase(){
+  if (!window.confirm('Obrisati SVE podatke i slike? Ne može se poništiti.')) return;
+  db = { people: [], titles: [], meta: { nextPersonId: 1, nextTitleId: 1, version: 3 } };
+  saveDB();
+  try{
+    await clearAllImages();
+    imageURLs.forEach(e => { try{ URL.revokeObjectURL(e.url); }catch(err){} });
+    imageURLs.clear();
+    knownImageKeys = new Set();
+  }catch(e){}
+  toast('Baza je obrisana');
+  go('/');
+}
+
+/* ============================================================
+   25. LISTENERS
+   ============================================================ */
+function attachListeners(){
+  const lq = document.getElementById('listQuery');
+  const lg = document.getElementById('listGenre');
+  const ls = document.getElementById('listSort');
+  if (lq) lq.addEventListener('input', e => {
+    (ui.listType === 'film' ? ui.films : ui.series).query = e.target.value;
+    renderTitleGrid();
+  });
+  if (lg) lg.addEventListener('change', e => {
+    (ui.listType === 'film' ? ui.films : ui.series).genre = e.target.value;
+    renderTitleGrid();
+  });
+  if (ls) ls.addEventListener('change', e => {
+    (ui.listType === 'film' ? ui.films : ui.series).sort = e.target.value;
+    renderTitleGrid();
+  });
+  if (lq || lg || ls) renderTitleGrid();
+
+  const pq = document.getElementById('peopleQuery');
+  const ps = document.getElementById('peopleSort');
+  if (pq) pq.addEventListener('input', e => { ui.people.query = e.target.value; renderPeopleGrid(); });
+  if (ps) ps.addEventListener('change', e => { ui.people.sort = e.target.value; renderPeopleGrid(); });
+  if (pq || ps) renderPeopleGrid();
+}
+
+document.addEventListener('click', function(e){
+  const link = e.target.closest('a[href^="#/"]');
+  if (link){
+    e.preventDefault();
+    go(link.getAttribute('href').slice(1));
+    return;
+  }
+  const el = e.target.closest('[data-action]');
+  if (!el) return;
+  e.preventDefault();
+  const action = el.dataset.action;
+  const id = el.dataset.id;
+  switch(action){
+    case 'title-new':        openTitleForm(null, el.dataset.type || 'film'); break;
+    case 'person-new':       openPersonForm(null); break;
+    case 'title-edit':       openTitleForm(Number(id)); break;
+    case 'person-edit':      openPersonForm(Number(id)); break;
+    case 'title-delete':     deleteTitle(Number(id)); break;
+    case 'person-delete':    deletePerson(Number(id)); break;
+    case 'credit-add-title': openCreditForm(Number(id)); break;
+    case 'credit-add-person':openCreditForPerson(Number(id)); break;
+    case 'credit-remove':    removeCredit(Number(el.dataset.title), Number(el.dataset.person)); break;
+    case 'export':           exportDatabase(); break;
+    case 'import':           document.getElementById('importFile').click(); break;
+    case 'clear':            clearDatabase(); break;
+  }
+});
+
+function bindGlobalSearch(){
+  const form = document.getElementById('globalSearchForm');
+  const input = document.getElementById('globalSearchInput');
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const q = input.value.trim();
+    if (q) go('/search?q=' + encodeURIComponent(q));
+  });
+}
+
+function bindImport(){
+  const input = document.getElementById('importFile');
+  input.addEventListener('change', e => {
+    const f = e.target.files && e.target.files[0];
+    if (f) importDatabase(f);
+    e.target.value = '';
+  });
+}
+
+/* ============================================================
+   26. BOOT
+   ============================================================ */
+async function boot(){
+  if (!loadDB()){
+    db = { people: [], titles: [], meta: { nextPersonId: 1, nextTitleId: 1, version: 3 } };
+    saveDB();
+  }
+  bindGlobalSearch();
+  bindImport();
+  try{ await refreshKnownImageKeys(); }catch(e){}
+  const initial = location.hash.replace(/^#/, '') || '/';
+  lastPath = null;
+  renderPath(initial);
+}
+
+document.addEventListener('DOMContentLoaded', boot);
+</script>
+
+</body>
+</html>
