@@ -13,7 +13,6 @@
   --paper:#f2ebdc; --paper-2:#e9e0cd; --paper-3:#dcd0b8;
   --ink:#191510; --ink-2:#4a4136; --ink-3:#776c5b;
   --rule:#cdc1a8; --rule-dark:#a89a7d;
-  /* Serbian flag palette */
   --red:#C6363C; --red-2:#D84349;
   --blue:#0C4076; --blue-2:#0E4C8C;
   --flag-white:#F8F4EB;
@@ -34,21 +33,13 @@ body{
   background-attachment:fixed;
   line-height:1.55; min-height:100vh; -webkit-font-smoothing:antialiased;
 }
-
-/* Top tricolor bar — subtle Serbian flag reference */
 body::before{
   content:'';
-  position:fixed;
-  top:0; left:0; right:0;
-  height:3px;
+  position:fixed; top:0; left:0; right:0; height:3px;
   background: linear-gradient(to bottom,
-    var(--red) 0 1px,
-    var(--blue) 1px 2px,
-    var(--flag-white) 2px 3px);
-  z-index:1000;
-  pointer-events:none;
+    var(--red) 0 1px, var(--blue) 1px 2px, var(--flag-white) 2px 3px);
+  z-index:1000; pointer-events:none;
 }
-
 a{ color:inherit; text-decoration:none; }
 button,input,select,textarea{ font:inherit; color:inherit; }
 img{ display:block; max-width:100%; }
@@ -74,9 +65,7 @@ img{ display:block; max-width:100%; }
   text-align:center; padding:22px 0 6px;
 }
 .logo em{
-  font-style:italic; font-weight:400;
-  color:var(--red);
-  /* subtle blue misregistration — flag hint */
+  font-style:italic; font-weight:400; color:var(--red);
   text-shadow: 2px 2px 0 rgba(12, 64, 118, 0.35);
 }
 .tagline{
@@ -134,16 +123,10 @@ img{ display:block; max-width:100%; }
   padding:34px 0 14px; margin-bottom:28px;
   position:relative;
 }
-/* tricolor underline — flag motif under every page heading */
 .page-head::after{
-  content:'';
-  position:absolute;
-  left:0; right:0; bottom:-4px;
-  height:2px;
+  content:''; position:absolute; left:0; right:0; bottom:-4px; height:2px;
   background: linear-gradient(to right,
-    var(--red) 0 33.33%,
-    var(--flag-white) 33.33% 66.66%,
-    var(--blue) 66.66% 100%);
+    var(--red) 0 33.33%, var(--flag-white) 33.33% 66.66%, var(--blue) 66.66% 100%);
   pointer-events:none;
 }
 .page-head h1{
@@ -159,7 +142,7 @@ img{ display:block; max-width:100%; }
 .page-head .sub b{ color:var(--red); }
 
 .kicker{
-  font-family:var(--font-mono); font-size:9.5px;
+  font-family:var(--font-mono); font-size:11px;
   letter-spacing:.24em; text-transform:uppercase;
   color:var(--red); margin-bottom:8px;
 }
@@ -180,12 +163,10 @@ img{ display:block; max-width:100%; }
   font-weight:700; letter-spacing:-.015em;
   line-height:1; flex-shrink:0;
 }
-/* subtle red→blue gradient on the section rule */
 .sec-line{
   flex:1; height:1px;
   background: linear-gradient(90deg,
-    rgba(198, 54, 60, 0.55) 0%,
-    rgba(12, 64, 118, 0.45) 100%);
+    rgba(198, 54, 60, 0.55) 0%, rgba(12, 64, 118, 0.45) 100%);
   align-self:center; min-width:20px;
 }
 .sec-meta{
@@ -283,6 +264,9 @@ img{ display:block; max-width:100%; }
   gap:8px; align-items:center;
   padding:8px; border:1px solid var(--rule);
   background:rgba(255,255,255,.3);
+}
+.cast-item.is-series{
+  grid-template-columns: 1.2fr 1fr 1fr 1.4fr 32px;
 }
 .cast-item .inp, .cast-item .sel{ font-size:13px; padding:4px 2px; }
 .cast-item .btn.bare{ padding:4px; }
@@ -396,8 +380,9 @@ img{ display:block; max-width:100%; }
   font-weight:700; line-height:1.18; letter-spacing:-.005em;
 }
 .tcard-year{
-  font-family:var(--font-mono); font-size:9.5px;
-  letter-spacing:.12em; color:var(--ink-3); text-transform:uppercase;
+  font-family:var(--font-mono); font-size:13px;
+  letter-spacing:.1em; color:var(--ink-2); text-transform:uppercase;
+  font-weight:600;
 }
 .tcard-genres{
   font-size:12.5px; font-style:italic;
@@ -488,10 +473,11 @@ img{ display:block; max-width:100%; }
   line-height:1.03; letter-spacing:-.02em; margin-bottom:8px;
 }
 .lead-meta{
-  font-family:var(--font-mono); font-size:9.5px;
-  letter-spacing:.16em; text-transform:uppercase;
-  color:var(--ink-3); padding-bottom:12px;
+  font-family:var(--font-mono); font-size:12px;
+  letter-spacing:.14em; text-transform:uppercase;
+  color:var(--ink-2); padding-bottom:12px;
   margin-bottom:12px; border-bottom:1px solid var(--rule);
+  font-weight:600;
 }
 .lead-copy .lede{ margin-bottom:18px; }
 .lead-side{ border-left:1px solid var(--rule); padding-left:34px; }
@@ -511,7 +497,10 @@ img{ display:block; max-width:100%; }
 .side-list li a:hover{ padding-left:5px; color:var(--red); }
 .sl-num{ font-family:var(--font-mono); font-size:9px; color:var(--ink-3); letter-spacing:.1em; }
 .sl-title{ font-family:var(--font-display); font-size:15px; font-weight:600; line-height:1.2; }
-.sl-year{ font-family:var(--font-mono); font-size:9px; color:var(--ink-3); letter-spacing:.1em; }
+.sl-year{
+  font-family:var(--font-mono); font-size:12px;
+  color:var(--ink-2); letter-spacing:.08em; font-weight:600;
+}
 
 .numbers{
   display:flex; flex-wrap:wrap;
@@ -576,11 +565,11 @@ img{ display:block; max-width:100%; }
   padding:6px 0; min-width:172px;
 }
 .fact dt{
-  font-family:var(--font-mono); font-size:8.5px;
+  font-family:var(--font-mono); font-size:10px;
   letter-spacing:.16em; text-transform:uppercase;
   color:var(--ink-3); white-space:nowrap;
 }
-.fact dd{ font-family:var(--font-body); font-size:14px; font-weight:600; color:var(--ink); }
+.fact dd{ font-family:var(--font-body); font-size:16px; font-weight:600; color:var(--ink); }
 
 /* ---------- Person detail ---------- */
 .profile{
@@ -624,15 +613,15 @@ img{ display:block; max-width:100%; }
 /* ---------- Rows ---------- */
 .rows{ border-top:1px solid var(--rule); }
 .credit-row{
-  display:grid; grid-template-columns:62px 1fr auto;
+  display:grid; grid-template-columns:110px 1fr auto;
   gap:18px; align-items:baseline; padding:13px 2px;
   border-bottom:1px solid var(--rule);
   transition:background .12s ease;
 }
 .credit-row:hover{ background:rgba(255,255,255,.35); }
 .cr-year{
-  font-family:var(--font-mono); font-size:10px;
-  letter-spacing:.12em; color:var(--ink-3);
+  font-family:var(--font-mono); font-size:14px;
+  letter-spacing:.06em; color:var(--ink-2); font-weight:600;
 }
 .cr-main a{
   font-family:var(--font-display); font-size:17px; font-weight:700;
@@ -729,13 +718,13 @@ img{ display:block; max-width:100%; }
 }
 .episode-line:last-child{ border-bottom:none; }
 .ep-num-display{
-  font-family:var(--font-mono); font-size:10px;
-  letter-spacing:.1em; color:var(--ink-3);
+  font-family:var(--font-mono); font-size:12px;
+  letter-spacing:.1em; color:var(--ink-2); font-weight:600;
 }
 .ep-title-display{ font-family:var(--font-body); font-size:14px; font-weight:500; }
 .ep-date-display{
-  font-family:var(--font-mono); font-size:10px;
-  color:var(--ink-3); letter-spacing:.08em;
+  font-family:var(--font-mono); font-size:12.5px;
+  color:var(--ink-2); letter-spacing:.06em; font-weight:600;
 }
 
 /* ---------- Stats ---------- */
@@ -870,13 +859,20 @@ img{ display:block; max-width:100%; }
   .grid.people{ grid-template-columns:repeat(auto-fill, minmax(132px, 1fr)); gap:22px 14px; }
   .lead-main{ grid-template-columns:130px 1fr; gap:18px; }
   .row-2, .row-3{ grid-template-columns:1fr; gap:0; }
-  .credit-row{ grid-template-columns:48px 1fr; gap:12px; }
+  .credit-row{ grid-template-columns:90px 1fr; gap:12px; }
   .credit-row .cr-role{ grid-column:2; justify-self:start; margin-top:4px; }
+  .cr-year{ font-size:12.5px; }
   .cast-row{ grid-template-columns:44px 1fr; gap:12px; }
   .cast-row .cast-side{ grid-column:2; margin-top:6px; }
   .cast-portrait{ width:44px; height:44px; }
   .cast-item{ grid-template-columns:1fr 1fr 32px; }
   .cast-item .cast-character{ grid-column:1 / -1; }
+  .cast-item.is-series{ grid-template-columns:1fr 1fr 32px; }
+  .cast-item.is-series .cast-name{ grid-column:1; grid-row:1; }
+  .cast-item.is-series .cast-role{ grid-column:2; grid-row:1; }
+  .cast-item.is-series .btn.bare{ grid-column:3; grid-row:1; }
+  .cast-item.is-series .cast-character{ grid-column:1 / -1; grid-row:2; }
+  .cast-item.is-series .cast-seasons{ grid-column:1 / -1; grid-row:3; }
   .episode-row{ grid-template-columns:44px 1fr 28px; }
   .episode-row .ep-title{ grid-column:1 / -1; grid-row:2; }
   .episode-row .ep-airdate{ grid-column:1 / -1; grid-row:3; }
@@ -889,6 +885,11 @@ img{ display:block; max-width:100%; }
 @media (prefers-reduced-motion:reduce){
   *{ animation-duration:.001ms !important; transition-duration:.001ms !important; }
 }
+
+/* Occupation checkboxes (injected at runtime) */
+.occ-checks{ display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:8px 14px; }
+.occ-check{ display:flex; align-items:center; gap:8px; font-size:14px; cursor:pointer; }
+.occ-check input{ accent-color:var(--red); width:16px; height:16px; }
 </style>
 </head>
 
@@ -1015,6 +1016,34 @@ function fmtBytes(b){
   if (!b || b < 1024) return (b || 0) + ' B';
   if (b < 1024*1024) return (b/1024).toFixed(1) + ' KB';
   return (b/1024/1024).toFixed(2) + ' MB';
+}
+
+/* NEW: computes the year range for a person's credit.
+   - Film → single year
+   - Series with no season info → full show range
+   - Series with seasons → year range derived from episode airdates of those seasons */
+function creditYearsLabel(c){
+  const title = c.title;
+  if (title.type !== 'series') return yearsLabel(title);
+  if (!c.seasons || !c.seasons.length) return yearsLabel(title);
+
+  const airdates = [];
+  (title.seasons || []).forEach(s => {
+    if (c.seasons.includes(s.number)){
+      (s.episodes || []).forEach(e => { if (e.airdate) airdates.push(e.airdate); });
+    }
+  });
+
+  if (airdates.length){
+    airdates.sort();
+    const minYear = airdates[0].slice(0, 4);
+    const maxYear = airdates[airdates.length - 1].slice(0, 4);
+    return minYear === maxYear ? minYear : minYear + '–' + maxYear;
+  }
+
+  const sorted = [...c.seasons].sort((a, b) => a - b);
+  if (sorted.length === 1) return 'Sezona ' + sorted[0];
+  return 'Sezone ' + sorted[0] + '–' + sorted[sorted.length - 1];
 }
 
 const OCCUPATIONS = [
@@ -1233,11 +1262,12 @@ function loadDB(){
 function getPerson(id){ return db.people.find(p => String(p.id) === String(id)); }
 function getTitle(id){ return db.titles.find(t => String(t.id) === String(id)); }
 
+/* UPDATED: acting credits now carry seasons array (may be empty for old data) */
 function filmographyFor(personId){
   const acting = [], directing = [], writing = [];
   db.titles.forEach(t => {
     const ce = (t.cast || []).find(c => String(c.personId) === String(personId));
-    if (ce) acting.push({ title:t, character:ce.character, role:ce.role });
+    if (ce) acting.push({ title:t, character:ce.character, role:ce.role, seasons: ce.seasons || [] });
     if ((t.directors || []).some(d => String(d) === String(personId))) directing.push({ title:t });
     if ((t.screenwriters || []).some(s => String(s) === String(personId))) writing.push({ title:t });
   });
@@ -1277,6 +1307,14 @@ function resolvePeople(names, defaultOccupation){
 
 function splitNames(str){
   return String(str || '').split(',').map(s => s.trim()).filter(Boolean);
+}
+
+/* Parses a comma-separated seasons string into a numeric array */
+function parseSeasons(str){
+  return String(str || '')
+    .split(',')
+    .map(s => parseInt(s.trim(), 10))
+    .filter(n => !isNaN(n) && n > 0);
 }
 
 /* ============================================================
@@ -1376,11 +1414,9 @@ function titleCard(t){
     </a>`;
 }
 
+/* UPDATED: birth place removed from the overview card */
 function personCard(p){
   const h = hueFor(p.name);
-  const filmo = filmographyFor(p.id);
-  const n = filmo.acting.length + filmo.directing.length + filmo.writing.length;
-  const meta = [p.birthPlace].filter(Boolean).join('') || 'Nepoznato';
   const occ = (p.occupations || []).slice(0,2).join(' · ') || 'Zanimanje nije uneto';
   return `
     <a class="pcard" href="#/person/${p.id}">
@@ -1388,7 +1424,6 @@ function personCard(p){
         <span>${esc(initials(p.name))}</span>
       </div>
       <div class="pcard-name">${esc(p.name)}</div>
-      <div class="pcard-meta">${esc(meta)}</div>
       <div class="pcard-count">${esc(occ)}</div>
     </a>`;
 }
@@ -1676,9 +1711,10 @@ function viewPerson(id){
   if (p.birthPlace) facts.push(`<div class="fact"><dt>Mesto rođenja</dt><dd>${esc(p.birthPlace)}</dd></div>`);
   facts.push(`<div class="fact"><dt>Zapisa u bazi</dt><dd>${total}</dd></div>`);
 
+  /* UPDATED: uses creditYearsLabel so series credits show the person's actual season range */
   const creditRow = c => `
     <div class="credit-row">
-      <div class="cr-year">${esc(c.title.year || '—')}</div>
+      <div class="cr-year">${esc(creditYearsLabel(c))}</div>
       <div class="cr-main">
         <a href="#/title/${c.title.id}">${esc(c.title.title)}</a>
         ${c.character ? `<span class="cr-char">kao <b>${esc(c.character)}</b></span>` : ''}
@@ -1686,9 +1722,10 @@ function viewPerson(id){
       <div class="cr-role">${c.role ? `<span class="${roleClass(c.role)}">${esc(c.role)}</span>` : ''}</div>
     </div>`;
 
+  /* UPDATED: directing/writing credits now show full show range for series via yearsLabel */
   const simpleRow = c => `
     <div class="credit-row">
-      <div class="cr-year">${esc(c.title.year || '—')}</div>
+      <div class="cr-year">${esc(yearsLabel(c.title))}</div>
       <div class="cr-main">
         <a href="#/title/${c.title.id}">${esc(c.title.title)}</a>
         <span class="cr-char">${c.title.type === 'film' ? 'film' : 'serija'}</span>
@@ -2118,27 +2155,30 @@ async function applyPendingImageToKey(pending, key){
 /* ============================================================
    18. CAST EDITOR (inside forms)
    ============================================================ */
-function castRowMarkup(name, character, role){
+/* UPDATED: accepts seasons and isSeries so series cast rows get an extra "Sezone" input */
+function castRowMarkup(name, character, role, seasons, isSeries){
   const roles = ['Glavna uloga', 'Sporedna uloga', 'Epizodna uloga', 'Gost'];
+  const seasonsValue = (seasons || []).join(', ');
   return `
-    <div class="cast-item" data-cast-item>
+    <div class="cast-item${isSeries ? ' is-series' : ''}" data-cast-item>
       <input class="inp cast-name" placeholder="Ime glumca" value="${esc(name || '')}">
       <input class="inp cast-character" placeholder="Lik" value="${esc(character || '')}">
       <select class="sel cast-role">
         ${roles.map(r => `<option${r === (role || 'Glavna uloga') ? ' selected' : ''}>${r}</option>`).join('')}
       </select>
+      ${isSeries ? `<input class="inp cast-seasons" placeholder="Sezone (npr. 1, 2, 3)" value="${esc(seasonsValue)}">` : ''}
       <button type="button" class="btn bare" data-remove-cast title="Ukloni">&#10005;</button>
     </div>`;
 }
 
-function bindCastEditor(form){
+function bindCastEditor(form, isSeries){
   const editor = form.querySelector('[data-cast]');
   const addBtn = form.querySelector('[data-add-cast]');
   if (!editor || !addBtn) return;
 
   addBtn.addEventListener('click', () => {
     const tmp = document.createElement('div');
-    tmp.innerHTML = castRowMarkup('', '', 'Glavna uloga').trim();
+    tmp.innerHTML = castRowMarkup('', '', 'Glavna uloga', [], isSeries).trim();
     editor.appendChild(tmp.firstChild);
   });
 
@@ -2152,11 +2192,16 @@ function bindCastEditor(form){
 
 function readCast(form){
   const items = [...form.querySelectorAll('[data-cast-item]')];
-  return items.map(item => ({
-    name: (item.querySelector('.cast-name').value || '').trim(),
-    character: (item.querySelector('.cast-character').value || '').trim(),
-    role: item.querySelector('.cast-role').value || 'Glavna uloga'
-  })).filter(c => c.name);
+  return items.map(item => {
+    const seasonsEl = item.querySelector('.cast-seasons');
+    const seasons = seasonsEl ? parseSeasons(seasonsEl.value) : [];
+    return {
+      name: (item.querySelector('.cast-name').value || '').trim(),
+      character: (item.querySelector('.cast-character').value || '').trim(),
+      role: item.querySelector('.cast-role').value || 'Glavna uloga',
+      seasons
+    };
+  }).filter(c => c.name);
 }
 
 /* ============================================================
@@ -2328,15 +2373,6 @@ function openPersonForm(id){
   });
 }
 
-/* Add extra styles for occupation checkboxes */
-const styleExtra = document.createElement('style');
-styleExtra.textContent = `
-.occ-checks{ display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:8px 14px; }
-.occ-check{ display:flex; align-items:center; gap:8px; font-size:14px; cursor:pointer; }
-.occ-check input{ accent-color:var(--red); width:16px; height:16px; }
-`;
-document.head.appendChild(styleExtra);
-
 /* ============================================================
    21. TITLE FORM
    ============================================================ */
@@ -2350,9 +2386,10 @@ function openTitleForm(id, presetType){
   const directorsStr = t ? (t.directors || []).map(id => getPerson(id)?.name).filter(Boolean).join(', ') : '';
   const screenwritersStr = t ? (t.screenwriters || []).map(id => getPerson(id)?.name).filter(Boolean).join(', ') : '';
 
+  /* UPDATED: pass seasons and isSeries to cast rows */
   const castRowsHtml = (t ? (t.cast || []) : []).map(c => {
     const p = getPerson(c.personId);
-    return castRowMarkup(p ? p.name : '', c.character, c.role);
+    return castRowMarkup(p ? p.name : '', c.character, c.role, c.seasons || [], isSeries);
   }).join('');
 
   const seasonsHtml = isSeries
@@ -2419,7 +2456,7 @@ function openTitleForm(id, presetType){
         ${castRowsHtml}
       </div>
       <button type="button" class="btn tiny" data-add-cast style="margin-top:8px">+ Dodaj ulogu</button>
-      <div class="hint">Nepoznate osobe se automatski dodaju u bazu kao glumci.</div>
+      <div class="hint">Nepoznate osobe se automatski dodaju u bazu kao glumci.${isSeries ? ' Za serije možete navesti sezone u kojima se glumac pojavljuje.' : ''}</div>
     </div>
 
     ${isSeries ? `
@@ -2439,7 +2476,7 @@ function openTitleForm(id, presetType){
     submitLabel: t ? 'Sačuvaj izmene' : 'Dodaj naslov',
     onReady(form){
       bindImagePicker(pending);
-      bindCastEditor(form);
+      bindCastEditor(form, isSeries);
       if (isSeries) bindSeasonsEditor(form);
     },
     async onSubmit(form){
@@ -2465,7 +2502,12 @@ function openTitleForm(id, presetType){
       castItems.forEach(item => {
         const r = resolvePeople([item.name], 'Glumac/ica');
         if (r.ids.length){
-          castResolved.push({ personId: r.ids[0], character: item.character, role: item.role });
+          castResolved.push({
+            personId: r.ids[0],
+            character: item.character,
+            role: item.role,
+            seasons: isSeries ? item.seasons : []
+          });
           if (r.created.length) castCreated.push(...r.created);
         }
       });
@@ -2526,6 +2568,7 @@ function openCreditForm(titleId){
     openPersonForm(null);
     return;
   }
+  const isSeries = t.type === 'series';
   const opts = db.people.slice().sort((a,b) => a.name.localeCompare(b.name,'sr'))
     .map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
 
@@ -2549,7 +2592,14 @@ function openCreditForm(titleId){
           <option value="Gost">Gost</option>
         </select>
       </label>
-    </div>`;
+    </div>
+    ${isSeries ? `
+      <label class="field">
+        <span class="lab">Sezone</span>
+        <input class="inp" name="seasons" placeholder="npr. 1, 2, 3">
+        <div class="hint">Odvojite zarezom. Ostavite prazno ako se pojavljuje u svim sezonama.</div>
+      </label>
+    ` : ''}`;
 
   showModal({
     title: 'Dodaj ulogu',
@@ -2563,10 +2613,12 @@ function openCreditForm(titleId){
       if (t.cast.some(c => String(c.personId) === String(pid))){
         toast('Ova osoba već ima ulogu', 'error'); return;
       }
+      const seasons = isSeries ? parseSeasons(d.get('seasons')) : [];
       t.cast.push({
         personId: pid,
         character: String(d.get('character') || '').trim(),
-        role: String(d.get('role') || 'Glavna uloga')
+        role: String(d.get('role') || 'Glavna uloga'),
+        seasons
       });
       saveDB();
       closeModal();
@@ -2587,11 +2639,12 @@ function openCreditForPerson(personId){
   const opts = db.titles.slice().sort((a,b) => (b.year||0)-(a.year||0))
     .map(t => `<option value="${t.id}">${esc(t.title)} (${esc(yearsLabel(t))})</option>`).join('');
 
+  /* UPDATED: seasons field is added but hidden — JS toggles it based on selected title type */
   const body = `
     <p class="lede" style="margin-bottom:20px">Nova uloga za osobu: <b>${esc(p.name)}</b></p>
     <label class="field">
       <span class="lab">Naslov *</span>
-      <select class="sel" name="titleId" required>${opts}</select>
+      <select class="sel" name="titleId" id="creditTitleSelect" required>${opts}</select>
     </label>
     <div class="row-2">
       <label class="field">
@@ -2607,12 +2660,31 @@ function openCreditForPerson(personId){
           <option value="Gost">Gost</option>
         </select>
       </label>
+    </div>
+    <div id="seasonsWrap" style="display:none">
+      <label class="field">
+        <span class="lab">Sezone</span>
+        <input class="inp" name="seasons" placeholder="npr. 1, 2, 3">
+        <div class="hint">Odvojite zarezom. Ostavite prazno ako se pojavljuje u svim sezonama.</div>
+      </label>
     </div>`;
 
   showModal({
     title: 'Dodaj ulogu osobi',
     body,
     submitLabel: 'Dodaj ulogu',
+    onReady(form){
+      const sel = form.querySelector('#creditTitleSelect');
+      const wrap = form.querySelector('#seasonsWrap');
+      if (!sel || !wrap) return;
+      function update(){
+        const tid = Number(sel.value);
+        const t = getTitle(tid);
+        wrap.style.display = (t && t.type === 'series') ? 'block' : 'none';
+      }
+      sel.addEventListener('change', update);
+      update();
+    },
     async onSubmit(form){
       const d = new FormData(form);
       const tid = Number(d.get('titleId'));
@@ -2622,10 +2694,12 @@ function openCreditForPerson(personId){
       if (t.cast.some(c => String(c.personId) === String(personId))){
         toast('Ova osoba već ima ulogu', 'error'); return;
       }
+      const seasons = t.type === 'series' ? parseSeasons(d.get('seasons')) : [];
       t.cast.push({
         personId: personId,
         character: String(d.get('character') || '').trim(),
-        role: String(d.get('role') || 'Glavna uloga')
+        role: String(d.get('role') || 'Glavna uloga'),
+        seasons
       });
       saveDB();
       closeModal();
