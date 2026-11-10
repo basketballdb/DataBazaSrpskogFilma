@@ -90,11 +90,7 @@ img{ display:block; max-width:100%; }
 .mainnav a:hover{ background:var(--ink); color:var(--paper); }
 .mainnav a.is-active{ background:var(--red); color:#fdf6e9; }
 
-/* ---------- Search band (framed) ---------- */
-.searchband{
-  padding: 12px 0 14px;
-  border-bottom: 1px solid var(--ink);
-}
+.searchband{ padding: 12px 0 14px; border-bottom: 1px solid var(--ink); }
 .searchband-frame{
   display: flex; align-items: center; gap: 12px;
   border: 2px solid var(--ink);
@@ -188,7 +184,6 @@ img{ display:block; max-width:100%; }
   color:var(--ink-3); flex-shrink:0;
 }
 
-/* ---------- Hero numbers (Home) ---------- */
 .hero-numbers{
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -222,7 +217,6 @@ img{ display:block; max-width:100%; }
   font-weight: 600;
 }
 
-/* ---------- Buttons ---------- */
 .btn{
   display:inline-flex; align-items:center; justify-content:center; gap:8px;
   font-family:var(--font-mono); font-size:10px;
@@ -253,7 +247,6 @@ img{ display:block; max-width:100%; }
 .btn.bare:hover{ background:var(--ink); color:var(--paper); transform:none; box-shadow:none; }
 .btn-row{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
 
-/* ---------- Forms ---------- */
 .field{ display:block; margin-bottom:20px; }
 .field > .lab{
   display:block; font-family:var(--font-mono); font-size:9px;
@@ -281,7 +274,6 @@ img{ display:block; max-width:100%; }
 .row-2{ display:grid; grid-template-columns:1fr 1fr; gap:22px; }
 .row-3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:22px; }
 
-/* ---------- Image picker ---------- */
 .img-field{ margin-bottom:22px; }
 .img-field > .lab{
   display:block; font-family:var(--font-mono); font-size:9px;
@@ -304,7 +296,6 @@ img{ display:block; max-width:100%; }
 .img-picker-actions{ display:flex; flex-direction:column; gap:8px; flex:1 1 200px; }
 .img-picker-actions .hint{ margin-top:0; }
 
-/* ---------- Cast editor (role removed) ---------- */
 .cast-editor{ display:flex; flex-direction:column; gap:8px; }
 .cast-item{
   display:grid; grid-template-columns: 1.4fr 1fr 32px;
@@ -313,12 +304,11 @@ img{ display:block; max-width:100%; }
   background:rgba(255,255,255,.3);
 }
 .cast-item.is-series{
-  grid-template-columns: 1.2fr 1fr 1.4fr 32px;
+  grid-template-columns: 1.2fr 1fr 1.6fr 32px;
 }
 .cast-item .inp{ font-size:13px; padding:4px 2px; }
 .cast-item .btn.bare{ padding:4px; }
 
-/* ---------- Seasons editor (form) ---------- */
 .seasons-editor{ display:flex; flex-direction:column; gap:12px; }
 .season-block{
   border:1px solid var(--rule-dark); padding:10px;
@@ -356,7 +346,6 @@ img{ display:block; max-width:100%; }
 .episode-row .ep-airdate{ font-family:var(--font-mono); font-size:11px; }
 .episode-row .btn.bare{ padding:2px; }
 
-/* ---------- Filters ---------- */
 .filters{
   display:flex; gap:26px; flex-wrap:wrap; align-items:flex-end;
   border-top:2px solid var(--ink); border-bottom:1px solid var(--rule);
@@ -371,7 +360,6 @@ img{ display:block; max-width:100%; }
 }
 .filters .inp, .filters .sel{ border-bottom-width:1px; font-size:14px; padding:4px 0; }
 
-/* ---------- Grid / Cards ---------- */
 .grid{
   display:grid; grid-template-columns:repeat(auto-fill, minmax(196px, 1fr));
   gap:30px 22px;
@@ -480,7 +468,6 @@ img{ display:block; max-width:100%; }
   padding-top:6px;
 }
 
-/* ---------- Title detail ---------- */
 .title-hero{
   display:grid; grid-template-columns:232px 1fr;
   gap:40px; border-bottom:3px double var(--ink);
@@ -537,7 +524,6 @@ img{ display:block; max-width:100%; }
 }
 .fact dd{ font-family:var(--font-body); font-size:16px; font-weight:600; color:var(--ink); }
 
-/* ---------- Series seasons sidebar (in hero) ---------- */
 .th-seasons{
   border-left: 1px solid var(--rule);
   padding-left: 28px;
@@ -613,7 +599,6 @@ img{ display:block; max-width:100%; }
   white-space: nowrap;
 }
 
-/* ---------- Person detail ---------- */
 .profile{
   display:grid; grid-template-columns:178px 1fr;
   gap:40px; border-bottom:3px double var(--ink);
@@ -643,6 +628,13 @@ img{ display:block; max-width:100%; }
   font-size:clamp(26px,4.2vw,44px); font-weight:800;
   line-height:1.04; letter-spacing:-.02em; margin-bottom:12px;
 }
+.profile-body h1 .dagger{
+  color: var(--ink-3);
+  font-weight: 400;
+  font-size: 0.65em;
+  vertical-align: super;
+  margin-left: 6px;
+}
 .occ-chips{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; }
 .occ-chip{
   font-family:var(--font-mono); font-size:9px;
@@ -652,7 +644,6 @@ img{ display:block; max-width:100%; }
 }
 .occ-chip.accent{ background:var(--ink); color:var(--paper); }
 
-/* ---------- Rows (no role column) ---------- */
 .rows{ border-top:1px solid var(--rule); }
 .credit-row{
   display:grid; grid-template-columns:110px 1fr;
@@ -729,7 +720,6 @@ img{ display:block; max-width:100%; }
 }
 .cast-side{ display:flex; align-items:center; gap:10px; }
 
-/* ---------- Crew list ---------- */
 .crew-list{ display:flex; flex-wrap:wrap; gap:14px 26px; }
 .crew-item{ display:flex; flex-direction:column; gap:2px; }
 .crew-label{
@@ -742,7 +732,6 @@ img{ display:block; max-width:100%; }
 }
 .crew-name a:hover{ color:var(--red); text-decoration:underline; }
 
-/* ---------- Stats ---------- */
 .ledger{ border-top:1px solid var(--rule); }
 .ledger-row{
   display:grid; grid-template-columns:1fr auto;
@@ -760,7 +749,6 @@ img{ display:block; max-width:100%; }
 }
 .gbar i{ display:block; height:100%; background:var(--red); }
 
-/* ---------- Empty ---------- */
 .empty{
   border:1px dashed var(--rule-dark);
   padding:46px 24px; text-align:center;
@@ -779,7 +767,6 @@ img{ display:block; max-width:100%; }
   max-width:46ch; margin:0 auto 18px;
 }
 
-/* ---------- Modal ---------- */
 #modalRoot{ display:none; }
 #modalRoot.open{ display:block; }
 .modal-backdrop{
@@ -825,7 +812,6 @@ img{ display:block; max-width:100%; }
   background:var(--paper-2);
 }
 
-/* ---------- Toast ---------- */
 #toastRoot{
   position:fixed; left:26px; bottom:26px; z-index:900;
   display:flex; flex-direction:column; gap:10px;
@@ -842,7 +828,6 @@ img{ display:block; max-width:100%; }
 .toast.info{ background:var(--blue); color:#f3f6fa; }
 @keyframes slipIn{ from{transform:translateX(-24px); opacity:0} to{transform:translateX(0); opacity:1} }
 
-/* ---------- Footer ---------- */
 .site-foot{
   border-top:2px solid var(--ink); background:var(--paper-2);
   padding:26px 28px 34px; margin-top:20px;
@@ -856,11 +841,8 @@ img{ display:block; max-width:100%; }
 }
 .foot-inner b{ color:var(--ink-2); }
 
-/* ---------- Responsive ---------- */
 @media (max-width: 1200px){
-  .title-hero.with-seasons{
-    grid-template-columns: 180px 1fr;
-  }
+  .title-hero.with-seasons{ grid-template-columns: 180px 1fr; }
   .title-hero.with-seasons .th-seasons{
     grid-column: 1 / -1;
     border-left: none;
@@ -1071,18 +1053,55 @@ function creditYearsLabel(c){
   return 'Sezone ' + sorted[0] + '–' + sorted[sorted.length - 1];
 }
 
-/* Computes "X sezone · Y epizoda" for a series credit */
+/* NEW: parses "1:5, 2:8, 3" → { seasons: [1,2,3], seasonEpisodes: {1:5, 2:8} }
+   Backwards compat: "1, 2, 3" → { seasons: [1,2,3], seasonEpisodes: {} } */
+function parseSeasons(str){
+  const seasons = [];
+  const seasonEpisodes = {};
+  String(str || '').split(',').forEach(part => {
+    const s = part.trim();
+    if (!s) return;
+    const bits = s.split(':');
+    const n = parseInt(bits[0].trim(), 10);
+    if (isNaN(n) || n <= 0) return;
+    if (!seasons.includes(n)) seasons.push(n);
+    if (bits.length > 1){
+      const c = parseInt(bits[1].trim(), 10);
+      if (!isNaN(c) && c >= 0) seasonEpisodes[n] = c;
+    }
+  });
+  return { seasons, seasonEpisodes };
+}
+
+/* NEW: formats seasons back into "1:5, 2:8, 3" for the input field */
+function formatSeasonsForInput(seasons, seasonEpisodes){
+  if (!seasons || !seasons.length) return '';
+  const se = seasonEpisodes || {};
+  return seasons.map(n => {
+    const c = se[n];
+    return (c !== undefined && c !== null) ? `${n}:${c}` : `${n}`;
+  }).join(', ');
+}
+
+/* NEW: counts episodes per-seasons, honoring explicit per-season counts */
 function seasonsEpisodesMeta(c){
   const t = c.title;
   if (t.type !== 'series') return '';
   const allSeasons = t.seasons || [];
   const castSeasons = c.seasons || [];
+  const seasonEpisodes = c.seasonEpisodes || {};
   let seasonsCount = 0, episodesCount = 0;
   if (castSeasons.length){
     seasonsCount = castSeasons.length;
-    episodesCount = allSeasons
-      .filter(s => castSeasons.includes(s.number))
-      .reduce((sum, s) => sum + (s.episodes || []).length, 0);
+    castSeasons.forEach(num => {
+      const explicit = seasonEpisodes[num];
+      if (explicit !== undefined && explicit !== null){
+        episodesCount += Number(explicit) || 0;
+      } else {
+        const s = allSeasons.find(x => Number(x.number) === Number(num));
+        if (s) episodesCount += (s.episodes || []).length;
+      }
+    });
   } else {
     seasonsCount = allSeasons.length;
     episodesCount = allSeasons.reduce((sum, s) => sum + (s.episodes || []).length, 0);
@@ -1377,7 +1396,11 @@ function filmographyFor(personId){
   const acting = [], directing = [], writing = [];
   db.titles.forEach(t => {
     const ce = (t.cast || []).find(c => String(c.personId) === String(personId));
-    if (ce) acting.push({ title:t, character:ce.character, role:ce.role, seasons: ce.seasons || [] });
+    if (ce) acting.push({
+      title:t, character:ce.character, role:ce.role,
+      seasons: ce.seasons || [],
+      seasonEpisodes: ce.seasonEpisodes || {}
+    });
     if ((t.directors || []).some(d => String(d) === String(personId))) directing.push({ title:t });
     if ((t.screenwriters || []).some(s => String(s) === String(personId))) writing.push({ title:t });
   });
@@ -1403,6 +1426,7 @@ function resolvePeople(names, defaultOccupation){
     const newPerson = {
       id: db.meta.nextPersonId++,
       name: name, birthDate: '', birthPlace: '',
+      deathDate: '', deathPlace: '',
       occupations: defaultOccupation ? [defaultOccupation] : [],
       bio: ''
     };
@@ -1415,13 +1439,6 @@ function resolvePeople(names, defaultOccupation){
 
 function splitNames(str){
   return String(str || '').split(',').map(s => s.trim()).filter(Boolean);
-}
-
-function parseSeasons(str){
-  return String(str || '')
-    .split(',')
-    .map(s => parseInt(s.trim(), 10))
-    .filter(n => !isNaN(n) && n > 0);
 }
 
 /* ============================================================
@@ -1557,7 +1574,7 @@ function notFound(title, text){
 }
 
 /* ============================================================
-   9. HOME — hero numbers only, no lead, no series section
+   9. HOME
    ============================================================ */
 function viewHome(){
   const films  = db.titles.filter(t => t.type === 'film');
@@ -1756,7 +1773,7 @@ function renderPeopleGrid(){
 }
 
 /* ============================================================
-   11. PERSON DETAIL — with series meta (seasons + episodes)
+   11. PERSON DETAIL — with death info + series meta
    ============================================================ */
 function viewPerson(id){
   const p = getPerson(id);
@@ -1770,7 +1787,12 @@ function viewPerson(id){
   const facts = [];
   if (p.birthDate) facts.push(`<div class="fact"><dt>Datum rođenja</dt><dd>${esc(fmtDate(p.birthDate))}</dd></div>`);
   if (p.birthPlace) facts.push(`<div class="fact"><dt>Mesto rođenja</dt><dd>${esc(p.birthPlace)}</dd></div>`);
+  if (p.deathDate) facts.push(`<div class="fact"><dt>Datum smrti</dt><dd>${esc(fmtDate(p.deathDate))}</dd></div>`);
+  if (p.deathPlace) facts.push(`<div class="fact"><dt>Mesto smrti</dt><dd>${esc(p.deathPlace)}</dd></div>`);
   facts.push(`<div class="fact"><dt>Zapisa u bazi</dt><dd>${total}</dd></div>`);
+
+  const isDeceased = !!(p.deathDate || p.deathPlace);
+  const nameHtml = esc(p.name) + (isDeceased ? '<span class="dagger">&dagger;</span>' : '');
 
   const creditRow = c => {
     const isSeries = c.title.type === 'series';
@@ -1802,7 +1824,7 @@ function viewPerson(id){
       </div>
       <div class="profile-body">
         <div class="kicker">Osoba u arhivi</div>
-        <h1>${esc(p.name)}</h1>
+        <h1>${nameHtml}</h1>
         <div class="occ-chips">${occChips}</div>
         ${p.bio ? `<p class="lede" style="margin-bottom:6px">${esc(p.bio)}</p>` : ''}
         <div class="facts">${facts.join('')}</div>
@@ -1837,7 +1859,7 @@ function viewPerson(id){
 }
 
 /* ============================================================
-   12. TITLE DETAIL — series get seasons in hero sidebar
+   12. TITLE DETAIL — series seasons in hero sidebar
    ============================================================ */
 function renderSeasonsPanel(t){
   if (!t.seasons || !t.seasons.length){
@@ -1876,10 +1898,7 @@ function viewTitle(id){
   if (!t) return notFound('Naslov nije pronađen', 'Traženi film ili serija ne postoji u arhivi.');
 
   const isSeries = t.type === 'series';
-
-  /* Keep original cast order (by role) so existing data's sort still works */
-  const roleOrder = { 'Glavna uloga':0, 'Sporedna uloga':1, 'Epizodna uloga':2, 'Gost':3 };
-  const cast = (t.cast || []).slice().sort((a,b) => (roleOrder[a.role]||9) - (roleOrder[b.role]||9));
+  const cast = (t.cast || []).slice();
 
   const facts = [];
   facts.push(`<div class="fact"><dt>${t.type === 'film' ? 'Godina' : 'Period'}</dt><dd>${esc(yearsLabel(t))}</dd></div>`);
@@ -2228,16 +2247,16 @@ async function applyPendingImageToKey(pending, key){
 }
 
 /* ============================================================
-   18. CAST EDITOR — role type removed from UI, kept as hidden input
+   18. CAST EDITOR — with per-season episode counts
    ============================================================ */
-function castRowMarkup(name, character, role, seasons, isSeries){
-  const seasonsValue = (seasons || []).join(', ');
+function castRowMarkup(name, character, role, seasons, seasonEpisodes, isSeries){
+  const seasonsValue = formatSeasonsForInput(seasons || [], seasonEpisodes || {});
   return `
     <div class="cast-item${isSeries ? ' is-series' : ''}" data-cast-item>
       <input class="inp cast-name" placeholder="Ime glumca" value="${esc(name || '')}">
       <input class="inp cast-character" placeholder="Lik" value="${esc(character || '')}">
       <input type="hidden" class="cast-role" value="${esc(role || '')}">
-      ${isSeries ? `<input class="inp cast-seasons" placeholder="Sezone (npr. 1, 2, 3)" value="${esc(seasonsValue)}">` : ''}
+      ${isSeries ? `<input class="inp cast-seasons" placeholder="Sezone (npr. 1:5, 2:8, 3)" value="${esc(seasonsValue)}">` : ''}
       <button type="button" class="btn bare" data-remove-cast title="Ukloni">&#10005;</button>
     </div>`;
 }
@@ -2249,7 +2268,7 @@ function bindCastEditor(form, isSeries){
 
   addBtn.addEventListener('click', () => {
     const tmp = document.createElement('div');
-    tmp.innerHTML = castRowMarkup('', '', '', [], isSeries).trim();
+    tmp.innerHTML = castRowMarkup('', '', '', [], {}, isSeries).trim();
     editor.appendChild(tmp.firstChild);
   });
 
@@ -2265,13 +2284,14 @@ function readCast(form){
   const items = [...form.querySelectorAll('[data-cast-item]')];
   return items.map(item => {
     const seasonsEl = item.querySelector('.cast-seasons');
-    const seasons = seasonsEl ? parseSeasons(seasonsEl.value) : [];
+    const parsed = seasonsEl ? parseSeasons(seasonsEl.value) : { seasons: [], seasonEpisodes: {} };
     const roleEl = item.querySelector('.cast-role');
     return {
       name: (item.querySelector('.cast-name').value || '').trim(),
       character: (item.querySelector('.cast-character').value || '').trim(),
       role: roleEl ? (roleEl.value || '') : '',
-      seasons
+      seasons: parsed.seasons,
+      seasonEpisodes: parsed.seasonEpisodes
     };
   }).filter(c => c.name);
 }
@@ -2361,7 +2381,7 @@ function readSeasons(form){
 }
 
 /* ============================================================
-   20. PERSON FORM
+   20. PERSON FORM — with death info
    ============================================================ */
 function openPersonForm(id){
   const p = id ? getPerson(id) : null;
@@ -2379,6 +2399,7 @@ function openPersonForm(id){
       <span class="lab">Ime i prezime *</span>
       <input class="inp" name="name" required value="${esc(p ? p.name : '')}" placeholder="npr. Danilo Bata Stojković">
     </label>
+
     <div class="row-2">
       <label class="field">
         <span class="lab">Datum rođenja</span>
@@ -2389,15 +2410,30 @@ function openPersonForm(id){
         <input class="inp" name="birthPlace" value="${esc(p ? p.birthPlace : '')}" placeholder="Beograd">
       </label>
     </div>
+
+    <div class="row-2">
+      <label class="field">
+        <span class="lab">Datum smrti</span>
+        <input class="inp" name="deathDate" type="date" value="${esc(p ? p.deathDate : '')}">
+      </label>
+      <label class="field">
+        <span class="lab">Mesto smrti</span>
+        <input class="inp" name="deathPlace" value="${esc(p ? p.deathPlace : '')}" placeholder="Beograd">
+      </label>
+      <div class="hint" style="grid-column:1 / -1; margin-top:0;">Popunite samo ako je osoba preminula.</div>
+    </div>
+
     <div class="field">
       <span class="lab">Zanimanja</span>
       <div class="occ-checks">${occChecks}</div>
       <div class="hint">Označite sve što važi.</div>
     </div>
+
     <label class="field">
       <span class="lab">Biografija</span>
       <textarea class="area" name="bio" placeholder="Kratka biografija…">${esc(p ? p.bio : '')}</textarea>
     </label>
+
     ${imagePickerMarkup(initialKey, 'portrait')}
   `;
 
@@ -2417,14 +2453,19 @@ function openPersonForm(id){
         p.name = name;
         p.birthDate = String(d.get('birthDate') || '').trim();
         p.birthPlace = String(d.get('birthPlace') || '').trim();
+        p.deathDate = String(d.get('deathDate') || '').trim();
+        p.deathPlace = String(d.get('deathPlace') || '').trim();
         p.occupations = occupations;
         p.bio = String(d.get('bio') || '').trim();
         targetId = p.id;
       } else {
         const newP = {
           id: db.meta.nextPersonId++,
-          name, birthDate: String(d.get('birthDate') || '').trim(),
+          name,
+          birthDate: String(d.get('birthDate') || '').trim(),
           birthPlace: String(d.get('birthPlace') || '').trim(),
+          deathDate: String(d.get('deathDate') || '').trim(),
+          deathPlace: String(d.get('deathPlace') || '').trim(),
           occupations, bio: String(d.get('bio') || '').trim()
         };
         db.people.push(newP);
@@ -2443,7 +2484,7 @@ function openPersonForm(id){
 }
 
 /* ============================================================
-   21. TITLE FORM
+   21. TITLE FORM — with per-season episode counts
    ============================================================ */
 function openTitleForm(id, presetType){
   const t = id ? getTitle(id) : null;
@@ -2457,7 +2498,7 @@ function openTitleForm(id, presetType){
 
   const castRowsHtml = (t ? (t.cast || []) : []).map(c => {
     const p = getPerson(c.personId);
-    return castRowMarkup(p ? p.name : '', c.character, c.role, c.seasons || [], isSeries);
+    return castRowMarkup(p ? p.name : '', c.character, c.role, c.seasons || [], c.seasonEpisodes || {}, isSeries);
   }).join('');
 
   const seasonsHtml = isSeries
@@ -2517,7 +2558,9 @@ function openTitleForm(id, presetType){
         ${castRowsHtml}
       </div>
       <button type="button" class="btn tiny" data-add-cast style="margin-top:8px">+ Dodaj ulogu</button>
-      <div class="hint">Nepoznate osobe se automatski dodaju u bazu kao glumci.${isSeries ? ' Za serije možete navesti sezone u kojima se glumac pojavljuje.' : ''}</div>
+      <div class="hint">
+        Nepoznate osobe se automatski dodaju u bazu kao glumci.${isSeries ? ' Za serije: sezone u formatu <strong>1:5</strong> (sezona:broj epizoda), odvojeno zarezom — npr. <strong>1:5, 2:8, 3</strong> (sezona 3 bez broja = sve epizode).' : ''}
+      </div>
     </div>
     ${isSeries ? `
       <div class="field">
@@ -2564,7 +2607,9 @@ function openTitleForm(id, presetType){
         if (r.ids.length){
           castResolved.push({
             personId: r.ids[0], character: item.character,
-            role: item.role || '', seasons: isSeries ? item.seasons : []
+            role: item.role || '',
+            seasons: isSeries ? item.seasons : [],
+            seasonEpisodes: isSeries ? item.seasonEpisodes : {}
           });
           if (r.created.length) castCreated.push(...r.created);
         }
@@ -2609,7 +2654,7 @@ function openTitleForm(id, presetType){
 }
 
 /* ============================================================
-   22. CREDIT FORMS — role select removed
+   22. CREDIT FORMS — with per-season episode counts
    ============================================================ */
 function openCreditForm(titleId){
   const t = getTitle(titleId);
@@ -2636,8 +2681,8 @@ function openCreditForm(titleId){
     ${isSeries ? `
       <label class="field">
         <span class="lab">Sezone</span>
-        <input class="inp" name="seasons" placeholder="npr. 1, 2, 3">
-        <div class="hint">Odvojite zarezom. Ostavite prazno ako se pojavljuje u svim sezonama.</div>
+        <input class="inp" name="seasons" placeholder="npr. 1:5, 2:8, 3">
+        <div class="hint">Format <strong>sezona:broj epizoda</strong>, odvojeno zarezom. Bez broja = sve epizode te sezone.</div>
       </label>
     ` : ''}`;
 
@@ -2651,10 +2696,12 @@ function openCreditForm(titleId){
       if (t.cast.some(c => String(c.personId) === String(pid))){
         toast('Ova osoba već ima ulogu', 'error'); return;
       }
-      const seasons = isSeries ? parseSeasons(d.get('seasons')) : [];
+      const parsed = isSeries ? parseSeasons(d.get('seasons')) : { seasons: [], seasonEpisodes: {} };
       t.cast.push({
         personId: pid, character: String(d.get('character') || '').trim(),
-        role: '', seasons
+        role: '',
+        seasons: parsed.seasons,
+        seasonEpisodes: parsed.seasonEpisodes
       });
       saveDB();
       closeModal();
@@ -2688,8 +2735,8 @@ function openCreditForPerson(personId){
     <div id="seasonsWrap" style="display:none">
       <label class="field">
         <span class="lab">Sezone</span>
-        <input class="inp" name="seasons" placeholder="npr. 1, 2, 3">
-        <div class="hint">Odvojite zarezom. Ostavite prazno ako se pojavljuje u svim sezonama.</div>
+        <input class="inp" name="seasons" placeholder="npr. 1:5, 2:8, 3">
+        <div class="hint">Format <strong>sezona:broj epizoda</strong>, odvojeno zarezom. Bez broja = sve epizode te sezone.</div>
       </label>
     </div>`;
 
@@ -2716,10 +2763,12 @@ function openCreditForPerson(personId){
       if (t.cast.some(c => String(c.personId) === String(personId))){
         toast('Ova osoba već ima ulogu', 'error'); return;
       }
-      const seasons = t.type === 'series' ? parseSeasons(d.get('seasons')) : [];
+      const parsed = t.type === 'series' ? parseSeasons(d.get('seasons')) : { seasons: [], seasonEpisodes: {} };
       t.cast.push({
         personId, character: String(d.get('character') || '').trim(),
-        role: '', seasons
+        role: '',
+        seasons: parsed.seasons,
+        seasonEpisodes: parsed.seasonEpisodes
       });
       saveDB();
       closeModal();
@@ -2922,7 +2971,6 @@ function attachListeners(){
 }
 
 document.addEventListener('click', function(e){
-  /* Season tile click — expand/collapse one tile, hide others */
   const tile = e.target.closest('.season-tile');
   if (tile){
     const grid = tile.closest('.seasons-grid');
