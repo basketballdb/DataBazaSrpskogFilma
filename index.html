@@ -56,6 +56,15 @@ img{ display:block; max-width:100%; }
   font-family:var(--font-mono); font-size:9.5px;
   letter-spacing:.2em; text-transform:uppercase; color:var(--ink-3);
 }
+.mh-left{ display:flex; align-items:center; gap:10px; }
+.save-status{
+  display:inline-block; width:8px; height:8px; border-radius:50%;
+  background:#4caf50; transition:background .2s ease;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.15);
+}
+.save-status.saving{ background:#f0a020; animation: pulse 1s ease infinite; }
+.save-status.error{ background:#d92d20; box-shadow: 0 0 0 2px rgba(217,45,32,.25); }
+@keyframes pulse{ 0%,100%{opacity:1} 50%{opacity:.4} }
 .mh-right{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
 .logo{
   font-family:var(--font-display); font-weight:900;
@@ -124,6 +133,23 @@ img{ display:block; max-width:100%; }
 .searchband .sb-go:hover{ background:var(--ink); color:var(--paper); }
 
 .container{ max-width:1240px; margin:0 auto; padding:8px 28px 90px; }
+
+#bannerRoot{ max-width:1240px; margin: 12px auto 0; padding: 0 28px; }
+.persistent-banner{
+  display:flex; align-items:center; gap:14px;
+  padding: 12px 16px;
+  background: rgba(217, 45, 32, 0.92);
+  color: #fdf6e9;
+  border: 2px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.4;
+}
+.persistent-banner.info{ background: rgba(12, 64, 118, 0.92); color:#f3f6fa; }
+.persistent-banner.warn{ background: rgba(189, 138, 27, 0.94); color: #fdf6e9; }
+.persistent-banner .banner-text{ flex:1; }
+.persistent-banner .btn{ flex-shrink:0; background: var(--paper); color: var(--ink); border-color: var(--ink); }
 
 .page-head{
   display:flex; align-items:flex-end; justify-content:space-between;
@@ -296,7 +322,6 @@ img{ display:block; max-width:100%; }
 .img-picker-actions{ display:flex; flex-direction:column; gap:8px; flex:1 1 200px; }
 .img-picker-actions .hint{ margin-top:0; }
 
-/* Cast editor — separate seasons & total episodes fields */
 .cast-editor{ display:flex; flex-direction:column; gap:8px; }
 .cast-item{
   display:grid; grid-template-columns: 1.4fr 1fr 32px;
@@ -663,34 +688,95 @@ img{ display:block; max-width:100%; }
   transition:border-color .12s ease, color .12s ease;
 }
 .cr-main a:hover{ color:var(--red); border-bottom-color:var(--red); }
-.cr-series-meta{
-  display: inline-block;
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: var(--blue);
-  background: rgba(12, 64, 118, 0.08);
-  border: 1px solid rgba(12, 64, 118, 0.3);
-  padding: 1px 7px;
-  margin-left: 6px;
-  font-weight: 600;
-  vertical-align: middle;
-  white-space: nowrap;
-}
 .cr-char{
   display:block; font-size:13px; font-style:italic;
   color:var(--ink-2); margin-top:2px;
 }
 .cr-char b{ font-style:normal; font-weight:600; }
 
+/* ==== NEW: Cast grid (tile layout) ==== */
+.cast-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 10px;
+}
+.cast-tile{
+  display:grid;
+  grid-template-columns: 52px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  border: 2px solid var(--ink);
+  background: var(--paper-2);
+  box-shadow: 2px 2px 0 var(--ink);
+  transition: background .12s ease, box-shadow .12s ease, transform .1s ease;
+}
+.cast-tile:hover{
+  background: var(--paper);
+  box-shadow: 3px 3px 0 var(--ink);
+  transform: translate(-1px, -1px);
+}
+.cast-tile-body{
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.25;
+}
+.cast-tile-name{
+  font-family: var(--font-display);
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-bottom: 1px solid transparent;
+  transition: color .12s ease, border-color .12s ease;
+}
+.cast-tile-name:hover{
+  color: var(--red);
+  border-bottom-color: var(--red);
+}
+.cast-tile-char{
+  font-size: 12px;
+  font-style: italic;
+  color: var(--ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cast-tile-episodes{
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--blue);
+  font-weight: 600;
+  margin-top: 2px;
+}
+.cast-tile-remove{
+  padding: 4px 6px !important;
+  font-size: 12px;
+  opacity: .4;
+  transition: opacity .12s ease, background .12s ease, color .12s ease;
+  align-self: start;
+  line-height: 1;
+}
+.cast-tile:hover .cast-tile-remove{ opacity: 1; }
+.cast-more{ margin-top: 10px; }
+.cast-more-toggle{
+  text-align: center;
+  margin-top: 18px;
+}
+
+/* Old cast row styles kept to avoid breaking anything else */
 .cast-row{
   display:grid; grid-template-columns:52px 1fr auto;
   gap:16px; align-items:center; padding:12px 2px;
   border-bottom:1px solid var(--rule);
   transition:background .12s ease;
 }
-.cast-row:hover{ background:rgba(255,255,255,.35); }
 .cast-portrait{
   position:relative; width:52px; height:52px;
   border:2px solid var(--ink); display:grid; place-items:center;
@@ -708,16 +794,6 @@ img{ display:block; max-width:100%; }
 .cast-portrait span{
   font-family:var(--font-display); font-size:15px;
   font-weight:900; color:#f7f0e1;
-}
-.cast-name a{
-  font-family:var(--font-display); font-size:16px; font-weight:700;
-  border-bottom:1px solid transparent;
-  transition:color .12s, border-color .12s;
-}
-.cast-name a:hover{ color:var(--red); border-bottom-color:var(--red); }
-.cast-char{
-  display:block; font-size:13px; font-style:italic;
-  color:var(--ink-2); margin-top:2px;
 }
 .cast-side{ display:flex; align-items:center; gap:10px; }
 
@@ -863,6 +939,7 @@ img{ display:block; max-width:100%; }
 }
 @media (max-width:700px){
   .masthead, .container{ padding-left:16px; padding-right:16px; }
+  #bannerRoot{ padding: 0 16px; }
   .masthead-top{ font-size:8.5px; letter-spacing:.14em; }
   .mainnav a{ padding:10px 11px; font-size:9.5px; letter-spacing:.12em; }
   .grid{ grid-template-columns:repeat(auto-fill, minmax(144px, 1fr)); gap:22px 14px; }
@@ -893,6 +970,7 @@ img{ display:block; max-width:100%; }
   .hero-num{ padding: 22px 16px 20px; }
   .hero-num b{ font-size: 56px; }
   .searchband-frame{ box-shadow:3px 3px 0 var(--ink); padding:8px 12px; }
+  .cast-grid{ grid-template-columns:1fr; }
 }
 @media (prefers-reduced-motion:reduce){
   *{ animation-duration:.001ms !important; transition-duration:.001ms !important; }
@@ -907,7 +985,10 @@ img{ display:block; max-width:100%; }
 
 <header class="masthead">
   <div class="masthead-top">
-    <div class="mh-left">Godina I &middot; Broj 1 &middot; Beograd</div>
+    <div class="mh-left">
+      Godina I &middot; Broj 1 &middot; Beograd
+      <span class="save-status" id="saveStatus" title="Status čuvanja"></span>
+    </div>
     <div class="mh-right">
       <button class="btn tiny" data-action="title-new" data-type="film">+ Film</button>
       <button class="btn tiny" data-action="title-new" data-type="series">+ Serija</button>
@@ -941,12 +1022,14 @@ img{ display:block; max-width:100%; }
   </form>
 </header>
 
+<div id="bannerRoot"></div>
+
 <main class="container" id="view"></main>
 
 <footer class="site-foot">
   <div class="foot-inner">
     <div><b>Srpska filmska baza</b> &mdash; lična arhiva</div>
-    <div>Tekst: localStorage &middot; Slike: IndexedDB</div>
+    <div>Tekst: localStorage + IndexedDB rezerva &middot; Slike: IndexedDB</div>
     <div>Izvoz / uvoz u JSON formatu</div>
   </div>
 </footer>
@@ -1000,12 +1083,6 @@ function pluralEpizoda(n){
   if (a>=2&&a<=4&&(b<12||b>14)) return 'epizode';
   return 'epizoda';
 }
-function pluralSezona(n){
-  const a=n%10,b=n%100;
-  if (a===1&&b!==11) return 'sezona';
-  if (a>=2&&a<=4&&(b<12||b>14)) return 'sezone';
-  return 'sezona';
-}
 function yearsLabel(t){
   if (!t.year) return '—';
   if (t.type === 'series' && t.endYear) return t.year + '–' + t.endYear;
@@ -1056,7 +1133,6 @@ function creditYearsLabel(c){
   return 'Sezone ' + sorted[0] + '–' + sorted[sorted.length - 1];
 }
 
-/* NEW: parse comma-separated season numbers (backward compat: ignores legacy "1:5" suffix) */
 function parseSeasons(str){
   return String(str || '')
     .split(',')
@@ -1068,15 +1144,12 @@ function parseSeasons(str){
     .filter((v, i, arr) => arr.indexOf(v) === i);
 }
 
-/* NEW: extract explicit total-episode count from a cast entry.
-   Returns null when not set (so UI can fall back to summing the season episodes). */
 function getExplicitTotalEpisodes(castEntry){
   if (!castEntry) return null;
   if (castEntry.totalEpisodes !== undefined && castEntry.totalEpisodes !== null && castEntry.totalEpisodes !== ''){
     const n = parseInt(castEntry.totalEpisodes, 10);
     if (!isNaN(n) && n >= 0) return n;
   }
-  /* Legacy fallback: sum per-season counts if that old format exists */
   if (castEntry.seasonEpisodes && Object.keys(castEntry.seasonEpisodes).length){
     const sum = Object.values(castEntry.seasonEpisodes)
       .reduce((acc, v) => acc + (Number(v) || 0), 0);
@@ -1085,37 +1158,23 @@ function getExplicitTotalEpisodes(castEntry){
   return null;
 }
 
-/* NEW: "X sezona · Y epizoda" display string for a cast entry.
-   Uses explicit totalEpisodes when set; otherwise sums full episodes of the listed seasons. */
-function seasonsEpisodesMeta(c){
-  const t = c.title;
-  if (t.type !== 'series') return '';
-  const allSeasons = t.seasons || [];
+/* NEW: compute episode count for a cast entry in a series title.
+   Priority: explicit totalEpisodes -> legacy seasonEpisodes sum -> sum of season episodes for the seasons they played in -> all seasons if none specified. */
+function computeCastEpisodes(c, title){
+  if (!title || title.type !== 'series') return 0;
+  const explicit = getExplicitTotalEpisodes(c);
+  if (explicit !== null) return explicit;
   const castSeasons = c.seasons || [];
-
-  let seasonsCount = 0;
-  let episodesCount = 0;
-
-  if (castSeasons.length){
-    seasonsCount = castSeasons.length;
-    const explicit = getExplicitTotalEpisodes(c);
-    if (explicit !== null){
-      episodesCount = explicit;
-    } else {
-      castSeasons.forEach(num => {
-        const s = allSeasons.find(x => Number(x.number) === Number(num));
-        if (s) episodesCount += (s.episodes || []).length;
-      });
-    }
-  } else {
-    seasonsCount = allSeasons.length;
-    episodesCount = allSeasons.reduce((sum, s) => sum + (s.episodes || []).length, 0);
+  if (!castSeasons.length){
+    return (title.seasons || []).reduce((sum, s) => sum + (s.episodes||[]).length, 0);
   }
-
-  if (!seasonsCount) return '';
-  const sLabel = seasonsCount + ' ' + pluralSezona(seasonsCount);
-  if (!episodesCount) return sLabel;
-  return sLabel + ' · ' + episodesCount + ' ' + pluralEpizoda(episodesCount);
+  let count = 0;
+  (title.seasons || []).forEach(s => {
+    if (castSeasons.includes(s.number)){
+      count += (s.episodes || []).length;
+    }
+  });
+  return count;
 }
 
 const OCCUPATIONS = [
@@ -1134,6 +1193,9 @@ const STORAGE_KEYS_FALLBACK = [
   'serbian_movie_db_v1'
 ];
 
+/* NEW: which title IDs have their cast section expanded (rest of cast visible) */
+const expandedCastTitles = new Set();
+
 let db = { people: [], titles: [], meta: { nextPersonId: 1, nextTitleId: 1, version: 3 } };
 
 const ui = {
@@ -1147,26 +1209,30 @@ let currentRoute = { segments:[], params:new URLSearchParams() };
 let lastPath = null;
 
 /* ============================================================
-   3. INDEXEDDB FOR IMAGES
+   3. INDEXEDDB — images + text backup
    ============================================================ */
 const IMG_DB_NAME = 'srpska_baza_images_v3';
 const IMG_STORE = 'images';
+const BACKUP_STORE = 'backup';
+const BACKUP_KEY = 'latest';
 let imageDBPromise = null;
 
 function getImageDB(){
   if (imageDBPromise) return imageDBPromise;
   imageDBPromise = new Promise((resolve, reject) => {
     if (!window.indexedDB){ reject(new Error('IndexedDB nije dostupan.')); return; }
-    const req = indexedDB.open(IMG_DB_NAME, 1);
+    const req = indexedDB.open(IMG_DB_NAME, 2);
     req.onupgradeneeded = () => {
       const idb = req.result;
       if (!idb.objectStoreNames.contains(IMG_STORE)) idb.createObjectStore(IMG_STORE);
+      if (!idb.objectStoreNames.contains(BACKUP_STORE)) idb.createObjectStore(BACKUP_STORE);
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
   });
   return imageDBPromise;
 }
+
 async function putImage(key, blob){
   const idb = await getImageDB();
   return new Promise((res, rej) => {
@@ -1174,6 +1240,7 @@ async function putImage(key, blob){
     tx.objectStore(IMG_STORE).put(blob, key);
     tx.oncomplete = () => res();
     tx.onerror = () => rej(tx.error);
+    tx.onabort = () => rej(tx.error || new Error('Transaction aborted'));
   });
 }
 async function getImage(key){
@@ -1248,34 +1315,86 @@ async function getImageStats(){
   return stats;
 }
 
-function compressImage(file, maxDim, quality){
+async function writeBackup(serialized){
+  try{
+    const idb = await getImageDB();
+    return new Promise((res, rej) => {
+      const tx = idb.transaction(BACKUP_STORE, 'readwrite');
+      tx.objectStore(BACKUP_STORE).put({ json: serialized, savedAt: Date.now() }, BACKUP_KEY);
+      tx.oncomplete = () => res();
+      tx.onerror = () => rej(tx.error);
+      tx.onabort = () => rej(tx.error || new Error('Backup aborted'));
+    });
+  }catch(e){ /* silent */ }
+}
+async function readBackup(){
+  try{
+    const idb = await getImageDB();
+    return await new Promise((res, rej) => {
+      const tx = idb.transaction(BACKUP_STORE, 'readonly');
+      const req = tx.objectStore(BACKUP_STORE).get(BACKUP_KEY);
+      req.onsuccess = () => res(req.result || null);
+      req.onerror = () => rej(req.error);
+    });
+  }catch(e){ return null; }
+}
+
+function loadImageFromFile(file){
   return new Promise((resolve, reject) => {
-    if (!file || !file.type || !file.type.startsWith('image/')){
-      reject(new Error('Nije slika.')); return;
-    }
-    const img = new Image();
     const url = URL.createObjectURL(file);
-    img.onload = () => {
-      URL.revokeObjectURL(url);
-      let { width, height } = img;
-      if (width > maxDim || height > maxDim){
-        if (width >= height){
-          height = Math.round(height * maxDim / width); width = maxDim;
-        } else {
-          width = Math.round(width * maxDim / height); height = maxDim;
-        }
-      }
-      const canvas = document.createElement('canvas');
-      canvas.width = width; canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      ctx.fillStyle = '#f2ebdc'; ctx.fillRect(0, 0, width, height);
-      ctx.drawImage(img, 0, 0, width, height);
-      canvas.toBlob(b => b ? resolve(b) : reject(new Error('Kompresija neuspešna.')),
-        'image/jpeg', quality);
-    };
-    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Ne mogu da učitam sliku.')); };
+    const img = new Image();
+    img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Ne mogu da učitam sliku')); };
     img.src = url;
   });
+}
+function canvasToBlob(canvas, mime, quality){
+  return new Promise((resolve) => {
+    try { canvas.toBlob(b => resolve(b), mime, quality); }
+    catch(e){ resolve(null); }
+  });
+}
+
+async function compressImage(file, opts){
+  const { maxDim = 480, quality = 0.72, targetKB = 55 } = opts || {};
+  if (!file || !file.type || !file.type.startsWith('image/')){
+    throw new Error('Nije slika.');
+  }
+  const img = await loadImageFromFile(file);
+  let { width, height } = img;
+  if (width > maxDim || height > maxDim){
+    if (width >= height){
+      height = Math.round(height * maxDim / width); width = maxDim;
+    } else {
+      width = Math.round(width * maxDim / height); height = maxDim;
+    }
+  }
+  const canvas = document.createElement('canvas');
+  canvas.width = width; canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.fillStyle = '#f2ebdc';
+  ctx.fillRect(0, 0, width, height);
+  ctx.drawImage(img, 0, 0, width, height);
+
+  const targetBytes = targetKB * 1024;
+  let blob = await canvasToBlob(canvas, 'image/webp', quality);
+  let mimeUsed = 'image/webp';
+  if (!blob){
+    blob = await canvasToBlob(canvas, 'image/jpeg', quality);
+    mimeUsed = 'image/jpeg';
+    if (!blob) throw new Error('Kompresija neuspešna.');
+  }
+  let q = quality;
+  let attempts = 0;
+  while (blob.size > targetBytes && attempts < 5 && q > 0.4){
+    q -= 0.1;
+    const next = await canvasToBlob(canvas, mimeUsed, q);
+    if (next && next.size < blob.size) blob = next;
+    attempts++;
+  }
+  return blob;
 }
 
 const imageURLs = new Map();
@@ -1314,9 +1433,35 @@ async function applyImages(container){
 }
 
 /* ============================================================
-   4. STORAGE (text) — HARDENED
+   4. STORAGE
    ============================================================ */
 let __forceEmptySave = false;
+let saveStatusEl = null;
+
+function setSaveStatus(state){
+  if (!saveStatusEl) saveStatusEl = document.getElementById('saveStatus');
+  if (!saveStatusEl) return;
+  saveStatusEl.classList.remove('saving', 'error');
+  if (state === 'saving') saveStatusEl.classList.add('saving');
+  else if (state === 'error') saveStatusEl.classList.add('error');
+  saveStatusEl.title =
+    state === 'saving' ? 'Čuvanje…'
+    : state === 'error' ? 'Greška pri čuvanju! Podaci su u rezervi.'
+    : 'Sačuvano ' + new Date().toLocaleTimeString('sr-RS');
+}
+
+function showPersistentBanner(text, type){
+  const root = document.getElementById('bannerRoot');
+  if (!root) return;
+  const div = document.createElement('div');
+  div.className = 'persistent-banner' + (type ? ' ' + type : '');
+  div.innerHTML = `
+    <span class="banner-text">${esc(text)}</span>
+    <button type="button" class="btn tiny" onclick="this.closest('.persistent-banner').remove()">Zatvori</button>
+  `;
+  root.innerHTML = '';
+  root.appendChild(div);
+}
 
 function saveDB(){
   try{
@@ -1333,11 +1478,50 @@ function saveDB(){
         }catch(e){}
       }
     }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
-    return true;
+
+    setSaveStatus('saving');
+    const serialized = JSON.stringify(db);
+
+    writeBackup(serialized).catch(() => {});
+
+    let localStorageOK = false;
+    let localStorageError = null;
+    try{
+      localStorage.setItem(STORAGE_KEY, serialized);
+      const verify = localStorage.getItem(STORAGE_KEY);
+      if (verify !== serialized){
+        throw new Error('Verifikacija nije uspela — podaci se razlikuju nakon upisa');
+      }
+      localStorageOK = true;
+    }catch(e){
+      localStorageError = e;
+    }
+
+    if (localStorageOK){
+      setSaveStatus('ok');
+      return true;
+    }
+
+    setSaveStatus('error');
+    const isQuota = localStorageError && (
+      localStorageError.name === 'QuotaExceededError' ||
+      /quota/i.test(String(localStorageError.message || ''))
+    );
+    if (isQuota){
+      showPersistentBanner(
+        'localStorage je pun! Podaci su ipak sačuvani u rezervnu kopiju (IndexedDB) i biće vraćeni pri sledećem otvaranju. Napravite IZVOZ (gore desno) da sačuvate trajno.',
+        'error'
+      );
+    } else {
+      showPersistentBanner(
+        'Greška pri čuvanju: ' + (localStorageError && localStorageError.message || 'nepoznato') + '. Podaci su u rezervi (IndexedDB).',
+        'error'
+      );
+    }
+    return false;
   }catch(e){
-    console.error(e);
-    toast('Greška pri čuvanju teksta', 'error');
+    console.error('Save failed:', e);
+    setSaveStatus('error');
     return false;
   }
 }
@@ -1361,9 +1545,27 @@ function _tryParseStorage(key){
   }
 }
 
-function loadDB(){
+async function loadDB(){
   let loaded = _tryParseStorage(STORAGE_KEY);
   let sourceKey = STORAGE_KEY;
+  let restoredFromBackup = false;
+
+  if (loaded && !loaded.people.length && !loaded.titles.length){
+    const backup = await readBackup();
+    if (backup && backup.json){
+      try{
+        const parsed = JSON.parse(backup.json);
+        if (parsed && Array.isArray(parsed.people) && Array.isArray(parsed.titles)){
+          if (parsed.people.length || parsed.titles.length){
+            console.log('Loaded empty primary but backup has data — using backup');
+            loaded = parsed;
+            sourceKey = 'backup';
+            restoredFromBackup = true;
+          }
+        }
+      }catch(e){}
+    }
+  }
 
   if (!loaded){
     for (const k of STORAGE_KEYS_FALLBACK){
@@ -1377,6 +1579,23 @@ function loadDB(){
     }
   }
 
+  if (!loaded){
+    const backup = await readBackup();
+    if (backup && backup.json){
+      try{
+        const parsed = JSON.parse(backup.json);
+        if (parsed && Array.isArray(parsed.people) && Array.isArray(parsed.titles)){
+          if (parsed.people.length || parsed.titles.length){
+            loaded = parsed;
+            sourceKey = 'backup';
+            restoredFromBackup = true;
+            console.log('Restored from IndexedDB backup');
+          }
+        }
+      }catch(e){}
+    }
+  }
+
   if (!loaded) return false;
 
   db = loaded;
@@ -1384,7 +1603,14 @@ function loadDB(){
   if (!db.meta.nextPersonId) db.meta.nextPersonId = db.people.reduce((m,p) => Math.max(m, Number(p.id)||0), 0) + 1;
   if (!db.meta.nextTitleId) db.meta.nextTitleId = db.titles.reduce((m,t) => Math.max(m, Number(t.id)||0), 0) + 1;
 
-  if (sourceKey !== STORAGE_KEY){
+  if (restoredFromBackup){
+    setTimeout(() => {
+      showPersistentBanner(
+        'Podaci su vraćeni iz rezervne kopije (localStorage je bio prazan ili nečitljiv). Napravite IZVOZ da ih sačuvate trajno.',
+        'info'
+      );
+    }, 300);
+  } else if (sourceKey !== STORAGE_KEY){
     try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); }catch(e){}
     setTimeout(() => toast('Podaci su migrirani iz starije verzije baze', 'info'), 800);
   }
@@ -1801,19 +2027,14 @@ function viewPerson(id){
   const isDeceased = !!(p.deathDate || p.deathPlace);
   const nameHtml = esc(p.name) + (isDeceased ? '<span class="dagger">&dagger;</span>' : '');
 
-  const creditRow = c => {
-    const isSeries = c.title.type === 'series';
-    const seriesMeta = isSeries ? seasonsEpisodesMeta(c) : '';
-    return `
-      <div class="credit-row">
-        <div class="cr-year">${esc(creditYearsLabel(c))}</div>
-        <div class="cr-main">
-          <a href="#/title/${c.title.id}">${esc(c.title.title)}</a>
-          ${seriesMeta ? `<span class="cr-series-meta">${esc(seriesMeta)}</span>` : ''}
-          ${c.character ? `<span class="cr-char">kao <b>${esc(c.character)}</b></span>` : ''}
-        </div>
-      </div>`;
-  };
+  const creditRow = c => `
+    <div class="credit-row">
+      <div class="cr-year">${esc(creditYearsLabel(c))}</div>
+      <div class="cr-main">
+        <a href="#/title/${c.title.id}">${esc(c.title.title)}</a>
+        ${c.character ? `<span class="cr-char">kao <b>${esc(c.character)}</b></span>` : ''}
+      </div>
+    </div>`;
 
   const simpleRow = c => `
     <div class="credit-row">
@@ -1900,12 +2121,57 @@ function renderSeasonsPanel(t){
   `;
 }
 
+/* NEW: cast tile markup for the grid */
+function castTileHtml(c, title, isSeries){
+  const p = getPerson(c.personId);
+  if (!p) return '';
+  const epCount = isSeries ? computeCastEpisodes(c, title) : 0;
+  const epHtml = (isSeries && epCount > 0)
+    ? `<div class="cast-tile-episodes">${epCount} ${pluralEpizoda(epCount)}</div>`
+    : '';
+  const charText = c.character ? 'kao ' + esc(c.character) : 'uloga nije navedena';
+  return `
+    <div class="cast-tile">
+      <div class="cast-portrait" data-img-key="person_${p.id}" style="--h:${hueFor(p.name)}">
+        <span>${esc(initials(p.name))}</span>
+      </div>
+      <div class="cast-tile-body">
+        <a class="cast-tile-name" href="#/person/${p.id}">${esc(p.name)}</a>
+        <div class="cast-tile-char">${charText}</div>
+        ${epHtml}
+      </div>
+      <button class="btn bare cast-tile-remove" data-action="credit-remove" data-title="${title.id}" data-person="${p.id}" title="Ukloni ulogu">&#10005;</button>
+    </div>
+  `;
+}
+
+function castGridHtml(list, title, isSeries){
+  return `<div class="cast-grid">${list.map(c => castTileHtml(c, title, isSeries)).join('')}</div>`;
+}
+
 function viewTitle(id){
   const t = getTitle(id);
   if (!t) return notFound('Naslov nije pronađen', 'Traženi film ili serija ne postoji u arhivi.');
 
   const isSeries = t.type === 'series';
-  const cast = (t.cast || []).slice();
+
+  /* NEW: clone cast, compute episode count for sorting (does not mutate stored data) */
+  let cast = (t.cast || []).map(c => Object.assign({}, c));
+  if (isSeries){
+    cast.forEach(c => { c._episodes = computeCastEpisodes(c, t); });
+    cast.sort((a, b) => (b._episodes || 0) - (a._episodes || 0));
+  }
+
+  const VISIBLE_CAST_LIMIT = 20;
+  let visibleCast, hiddenCast;
+  if (isSeries && cast.length > VISIBLE_CAST_LIMIT){
+    visibleCast = cast.slice(0, VISIBLE_CAST_LIMIT);
+    hiddenCast = cast.slice(VISIBLE_CAST_LIMIT);
+  } else {
+    visibleCast = cast;
+    hiddenCast = [];
+  }
+  const isExpanded = expandedCastTitles.has(String(t.id));
 
   const facts = [];
   facts.push(`<div class="fact"><dt>${t.type === 'film' ? 'Godina' : 'Period'}</dt><dd>${esc(yearsLabel(t))}</dd></div>`);
@@ -1936,26 +2202,23 @@ function viewTitle(id){
         </div>` : ''}
     </div>`;
 
-  const castRow = c => {
-    const p = getPerson(c.personId);
-    if (!p) return '';
-    return `
-      <div class="cast-row">
-        <div class="cast-portrait" data-img-key="person_${p.id}" style="--h:${hueFor(p.name)}">
-          <span>${esc(initials(p.name))}</span>
-        </div>
-        <div class="cast-name">
-          <a href="#/person/${p.id}">${esc(p.name)}</a>
-          <span class="cast-char">${c.character ? 'kao ' + esc(c.character) : 'uloga nije navedena'}</span>
-        </div>
-        <div class="cast-side">
-          <button class="btn bare" data-action="credit-remove" data-title="${t.id}" data-person="${p.id}" title="Ukloni ulogu">&#10005;</button>
-        </div>
-      </div>`;
-  };
-
   const heroClass = isSeries ? 'title-hero with-seasons' : 'title-hero';
   const seasonsPanel = isSeries ? `<div class="th-seasons">${renderSeasonsPanel(t)}</div>` : '';
+
+  const castSectionHtml = visibleCast.length
+    ? castGridHtml(visibleCast, t, isSeries) +
+      (hiddenCast.length ? `
+        <div class="cast-more" id="castMore" style="display:${isExpanded ? 'block' : 'none'}">
+          ${castGridHtml(hiddenCast, t, isSeries)}
+        </div>
+        <div class="cast-more-toggle">
+          <button class="btn" data-action="cast-toggle" data-hidden-count="${hiddenCast.length}">
+            ${isExpanded ? 'Sakrij (' + hiddenCast.length + ') ↑' : 'Prikaži sve (' + hiddenCast.length + ') ↓'}
+          </button>
+        </div>
+      ` : '')
+    : emptyBlock('&#9671;', 'Nema uloga', 'Nijedna osoba još nije povezana sa ovim naslovom.',
+        `<button class="btn blue" data-action="credit-add-title" data-id="${t.id}">+ Dodaj ulogu</button>`);
 
   return `
     <div class="${heroClass}">
@@ -1983,10 +2246,7 @@ function viewTitle(id){
     ` : ''}
 
     ${secHead((directorNames.length || screenwriterNames.length) ? '02' : '01', 'Uloge', cast.length + ' ' + pluralUloga(cast.length))}
-    ${cast.length
-      ? `<div>${cast.map(castRow).join('')}</div>`
-      : emptyBlock('&#9671;', 'Nema uloga', 'Nijedna osoba još nije povezana sa ovim naslovom.',
-          `<button class="btn blue" data-action="credit-add-title" data-id="${t.id}">+ Dodaj ulogu</button>`)}
+    ${castSectionHtml}
   `;
 }
 
@@ -2090,10 +2350,11 @@ function viewAbout(){
     <p class="lede" style="margin-bottom:26px">
       Lična arhiva srpskih filmova, serija i glumaca. Podaci se čuvaju isključivo u vašem pregledaču.
       Klikom na osobu otvarate njenu filmografiju, a klikom na naslov kompletnu ekipu i (za serije) sezone sa epizodama.
-      Slike se automatski kompresuju i čuvaju u IndexedDB, tako da ostaju sačuvane i posle zatvaranja stranice.
+      Slike se automatski kompresuju (WebP) i čuvaju u IndexedDB, tako da ostaju sačuvane i posle zatvaranja stranice.
+      Tekst se čuva u dva sloja: localStorage (primarno) + IndexedDB (rezerva).
     </p>
     <div class="ledger">
-      <div class="ledger-row"><div><div class="l-name">Tekstualni podaci</div></div><div class="l-count">localStorage</div></div>
+      <div class="ledger-row"><div><div class="l-name">Tekstualni podaci</div></div><div class="l-count">localStorage + IndexedDB rezerva</div></div>
       <div class="ledger-row"><div><div class="l-name">Slike</div></div><div class="l-count">IndexedDB</div></div>
       <div class="ledger-row"><div><div class="l-name">Verzija baze</div></div><div class="l-count">${esc(db.meta.version || 3)}</div></div>
       <div class="ledger-row"><div><div class="l-name">Broj naslova</div></div><div class="l-count">${db.titles.length}</div></div>
@@ -2105,7 +2366,7 @@ function viewAbout(){
       <div class="ledger-row"><div><div class="l-name">Učitavam…</div></div><div class="l-count">—</div></div>
     </div>
     <div class="hint" style="margin-top:12px">
-      Slike se automatski smanjuju (do 640px) i kompresuju u JPEG.
+      Slike se automatski smanjuju i kompresuju (WebP, ~50KB po slici).
     </div>
     ${secHead('02', 'Upravljanje bazom')}
     <div class="btn-row">
@@ -2114,6 +2375,7 @@ function viewAbout(){
       <button class="btn" data-action="person-new">+ Dodaj osobu</button>
       <button class="btn" data-action="export">Izvoz JSON</button>
       <button class="btn" data-action="import">Uvoz JSON</button>
+      <button class="btn" data-action="restore-backup">Vrati iz rezerve (IndexedDB)</button>
       <button class="btn outline-red" data-action="clear">Obriši sve</button>
     </div>
     <div class="hint" style="margin-top:14px">
@@ -2185,7 +2447,7 @@ function imagePickerMarkup(key, kind){
         <div class="img-picker-actions">
           <button type="button" class="btn tiny" id="imgPick">Izaberi sliku</button>
           <button type="button" class="btn tiny outline-red" id="imgClear">Ukloni sliku</button>
-          <div class="hint">JPG, PNG ili WebP. Automatski se smanjuje i kompresuje.</div>
+          <div class="hint">Automatski se kompresuje u WebP (~40-60KB).</div>
         </div>
       </div>
       <input type="file" id="imgFile" accept="image/*" hidden>
@@ -2199,6 +2461,11 @@ function bindImagePicker(pending){
   const fileInput = document.getElementById('imgFile');
   if (!preview || !pickBtn || !clearBtn || !fileInput) return;
 
+  const isPoster = preview.classList.contains('poster');
+  const opts = isPoster
+    ? { maxDim: 480, quality: 0.74, targetKB: 60 }
+    : { maxDim: 400, quality: 0.72, targetKB: 45 };
+
   if (pending.initialKey){
     getImageURL(pending.initialKey).then(url => {
       if (!url) return;
@@ -2211,15 +2478,21 @@ function bindImagePicker(pending){
   fileInput.addEventListener('change', async (e) => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
+    if (file.size > 20 * 1024 * 1024){
+      toast('Slika je prevelika (>20MB). Izaberite manju.', 'error');
+      fileInput.value = '';
+      return;
+    }
     try{
-      const blob = await compressImage(file, 640, 0.82);
+      const blob = await compressImage(file, opts);
       pending.current = blob;
       pending.removed = false;
       if (pending.previewURL){ try{ URL.revokeObjectURL(pending.previewURL); }catch(err){} }
       pending.previewURL = URL.createObjectURL(blob);
       preview.style.backgroundImage = `url("${pending.previewURL}")`;
       preview.classList.add('has-img');
-      toast('Slika je spremna (' + fmtBytes(blob.size) + ')', 'info');
+      const ratio = Math.max(0, Math.round((1 - blob.size / file.size) * 100));
+      toast('Slika: ' + fmtBytes(file.size) + ' → ' + fmtBytes(blob.size) + ' (-' + ratio + '%)', 'info');
     }catch(err){
       toast(err.message || 'Ne mogu da obradim sliku', 'error');
     }
@@ -2254,7 +2527,7 @@ async function applyPendingImageToKey(pending, key){
 }
 
 /* ============================================================
-   18. CAST EDITOR — seasons list + total episodes
+   18. CAST EDITOR
    ============================================================ */
 function castRowMarkup(name, character, role, seasons, totalEpisodes, isSeries){
   const seasonsValue = (seasons || []).join(', ');
@@ -2492,10 +2765,14 @@ function openPersonForm(id){
         targetId = newP.id;
       }
 
+      const textSaved = saveDB();
       try{ await applyPendingImageToKey(pending, 'person_' + targetId); }catch(err){}
 
-      saveDB();
-      toast(p ? 'Osoba je ažurirana' : 'Osoba je dodata');
+      if (textSaved){
+        toast(p ? 'Osoba je ažurirana' : 'Osoba je dodata');
+      } else {
+        toast('Podaci su sačuvani u rezervi — pogledajte obaveštenje gore.', 'error');
+      }
       if (pending.previewURL) try{ URL.revokeObjectURL(pending.previewURL); }catch(e){}
       closeModal();
       render();
@@ -2586,7 +2863,7 @@ function openTitleForm(id, presetType){
       </div>
       <button type="button" class="btn tiny" data-add-cast style="margin-top:8px">+ Dodaj ulogu</button>
       <div class="hint">
-        Nepoznate osobe se automatski dodaju u bazu kao glumci.${isSeries ? ' Za serije unesite <strong>sve sezone</strong> u kojima se glumac pojavljuje (npr. <strong>1, 2, 3</strong>) i <strong>ukupan broj epizoda</strong> kroz sve te sezone (npr. <strong>26</strong>).' : ''}
+        Nepoznate osobe se automatski dodaju u bazu kao glumci.${isSeries ? ' Za serije unesite <strong>sve sezone</strong> (npr. <strong>1, 2, 3</strong>) i <strong>ukupan broj epizoda</strong> kroz sve te sezone.' : ''}
       </div>
     </div>
     ${isSeries ? `
@@ -2665,14 +2942,17 @@ function openTitleForm(id, presetType){
         targetId = newT.id;
       }
 
+      const textSaved = saveDB();
       try{ await applyPendingImageToKey(pending, 'title_' + targetId); }catch(err){}
 
-      saveDB();
-      if (created.length){
-        toast('Kreirano ' + created.length + ' novih osoba. Uredite ih u sekciji Osobe.', 'info');
+      if (!textSaved){
+        toast('Podaci su sačuvani u rezervi — pogledajte obaveštenje gore.', 'error');
+      } else if (created.length){
+        toast('Kreirano ' + created.length + ' novih osoba.', 'info');
       } else {
         toast(t ? 'Naslov je ažuriran' : 'Naslov je dodat');
       }
+
       if (pending.previewURL) try{ URL.revokeObjectURL(pending.previewURL); }catch(e){}
       closeModal();
       render();
@@ -2876,7 +3156,7 @@ function removeCredit(titleId, personId){
 }
 
 /* ============================================================
-   24. IMPORT / EXPORT / CLEAR
+   24. IMPORT / EXPORT / CLEAR / RESTORE
    ============================================================ */
 function blobToBase64(blob){
   return new Promise((res, rej) => {
@@ -2983,6 +3263,34 @@ async function importDatabase(file){
   reader.readAsText(file);
 }
 
+async function restoreFromBackup(){
+  const backup = await readBackup();
+  if (!backup || !backup.json){
+    toast('Nema rezervne kopije.', 'error');
+    return;
+  }
+  const when = backup.savedAt ? new Date(backup.savedAt).toLocaleString('sr-RS') : 'nepoznato vreme';
+  if (!window.confirm(`Vratiti podatke iz rezervne kopije od ${when}? Trenutni podaci biće prepisani.`)) return;
+  try{
+    const parsed = JSON.parse(backup.json);
+    if (!parsed || !Array.isArray(parsed.people) || !Array.isArray(parsed.titles)){
+      toast('Rezervna kopija je neispravna.', 'error');
+      return;
+    }
+    db = parsed;
+    if (!db.meta) db.meta = { nextPersonId:1, nextTitleId:1, version:3 };
+    if (!db.meta.nextPersonId) db.meta.nextPersonId = db.people.reduce((m,p) => Math.max(m, Number(p.id)||0), 0) + 1;
+    if (!db.meta.nextTitleId) db.meta.nextTitleId = db.titles.reduce((m,t) => Math.max(m, Number(t.id)||0), 0) + 1;
+    saveDBForce();
+    try{ await refreshKnownImageKeys(); }catch(e){}
+    toast('Podaci su vraćeni iz rezervne kopije (' + db.titles.length + ' naslova, ' + db.people.length + ' osoba).');
+    go('/');
+  }catch(e){
+    console.error(e);
+    toast('Greška: ' + (e && e.message || 'nepoznato'), 'error');
+  }
+}
+
 async function clearDatabase(){
   if (!window.confirm('Obrisati SVE podatke i slike? Ne može se poništiti.')) return;
   db = { people: [], titles: [], meta: { nextPersonId: 1, nextTitleId: 1, version: 3 } };
@@ -3069,7 +3377,25 @@ document.addEventListener('click', function(e){
     case 'credit-remove':    removeCredit(Number(el.dataset.title), Number(el.dataset.person)); break;
     case 'export':           exportDatabase(); break;
     case 'import':           document.getElementById('importFile').click(); break;
+    case 'restore-backup':   restoreFromBackup(); break;
     case 'clear':            clearDatabase(); break;
+    case 'cast-toggle': {
+      const wrap = document.getElementById('castMore');
+      if (!wrap) break;
+      const titleId = String(currentRoute.segments[1] || '');
+      const hiddenCount = el.dataset.hiddenCount || '';
+      const currentlyHidden = (wrap.style.display === 'none' || !wrap.style.display);
+      if (currentlyHidden){
+        wrap.style.display = 'block';
+        el.textContent = 'Sakrij (' + hiddenCount + ') ↑';
+        expandedCastTitles.add(titleId);
+      } else {
+        wrap.style.display = 'none';
+        el.textContent = 'Prikaži sve (' + hiddenCount + ') ↓';
+        expandedCastTitles.delete(titleId);
+      }
+      break;
+    }
   }
 });
 
@@ -3096,7 +3422,8 @@ function bindImport(){
    26. BOOT
    ============================================================ */
 async function boot(){
-  const loaded = loadDB();
+  try{ saveStatusEl = document.getElementById('saveStatus'); }catch(e){}
+  const loaded = await loadDB();
 
   if (!loaded){
     db = { people: [], titles: [], meta: { nextPersonId: 1, nextTitleId: 1, version: 3 } };
@@ -3105,7 +3432,10 @@ async function boot(){
       if (raw && raw.length > 100){
         console.error('Storage contains data that could not be loaded.');
         setTimeout(() => {
-          toast('Podaci u pregledaču nisu mogli biti učitani. Sačuvajte ih pre dodavanja novih.', 'error');
+          showPersistentBanner(
+            'Podaci u pregledaču nisu mogli biti učitani. Pokušajte "Vrati iz rezerve" u sekciji O bazi, ili uvezite izvoz.',
+            'error'
+          );
         }, 700);
       }
     }catch(e){ /* localStorage unavailable */ }
@@ -3114,6 +3444,7 @@ async function boot(){
   bindGlobalSearch();
   bindImport();
   try{ await refreshKnownImageKeys(); }catch(e){}
+  setSaveStatus('ok');
   const initial = location.hash.replace(/^#/, '') || '/';
   lastPath = null;
   renderPath(initial);
