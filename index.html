@@ -296,6 +296,7 @@ img{ display:block; max-width:100%; }
 .img-picker-actions{ display:flex; flex-direction:column; gap:8px; flex:1 1 200px; }
 .img-picker-actions .hint{ margin-top:0; }
 
+/* Cast editor — separate seasons & total episodes fields */
 .cast-editor{ display:flex; flex-direction:column; gap:8px; }
 .cast-item{
   display:grid; grid-template-columns: 1.4fr 1fr 32px;
@@ -304,7 +305,7 @@ img{ display:block; max-width:100%; }
   background:rgba(255,255,255,.3);
 }
 .cast-item.is-series{
-  grid-template-columns: 1.2fr 1fr 1.6fr 32px;
+  grid-template-columns: 1.3fr 1fr 1.1fr 0.8fr 32px;
 }
 .cast-item .inp{ font-size:13px; padding:4px 2px; }
 .cast-item .btn.bare{ padding:4px; }
@@ -874,9 +875,11 @@ img{ display:block; max-width:100%; }
   .cast-portrait{ width:44px; height:44px; }
   .cast-item{ grid-template-columns:1fr 1fr 32px; }
   .cast-item.is-series{ grid-template-columns:1fr 1fr 32px; }
-  .cast-item.is-series .cast-seasons{ grid-column:1 / -1; grid-row:3; }
-  .cast-item.is-series .cast-character{ grid-column:1 / -1; grid-row:2; }
+  .cast-item.is-series .cast-name{ grid-column:1 / 3; grid-row:1; }
   .cast-item.is-series .btn.bare{ grid-column:3; grid-row:1; }
+  .cast-item.is-series .cast-character{ grid-column:1 / -1; grid-row:2; }
+  .cast-item.is-series .cast-seasons{ grid-column:1; grid-row:3; }
+  .cast-item.is-series .cast-episodes{ grid-column:2; grid-row:3; }
   .episode-row{ grid-template-columns:44px 1fr 28px; }
   .episode-row .ep-title{ grid-column:1 / -1; grid-row:2; }
   .episode-row .ep-airdate{ grid-column:1 / -1; grid-row:3; }
@@ -1053,59 +1056,62 @@ function creditYearsLabel(c){
   return 'Sezone ' + sorted[0] + '–' + sorted[sorted.length - 1];
 }
 
-/* NEW: parses "1:5, 2:8, 3" → { seasons: [1,2,3], seasonEpisodes: {1:5, 2:8} }
-   Backwards compat: "1, 2, 3" → { seasons: [1,2,3], seasonEpisodes: {} } */
+/* NEW: parse comma-separated season numbers (backward compat: ignores legacy "1:5" suffix) */
 function parseSeasons(str){
-  const seasons = [];
-  const seasonEpisodes = {};
-  String(str || '').split(',').forEach(part => {
-    const s = part.trim();
-    if (!s) return;
-    const bits = s.split(':');
-    const n = parseInt(bits[0].trim(), 10);
-    if (isNaN(n) || n <= 0) return;
-    if (!seasons.includes(n)) seasons.push(n);
-    if (bits.length > 1){
-      const c = parseInt(bits[1].trim(), 10);
-      if (!isNaN(c) && c >= 0) seasonEpisodes[n] = c;
-    }
-  });
-  return { seasons, seasonEpisodes };
+  return String(str || '')
+    .split(',')
+    .map(s => {
+      const head = s.split(':')[0].trim();
+      return parseInt(head, 10);
+    })
+    .filter(n => !isNaN(n) && n > 0)
+    .filter((v, i, arr) => arr.indexOf(v) === i);
 }
 
-/* NEW: formats seasons back into "1:5, 2:8, 3" for the input field */
-function formatSeasonsForInput(seasons, seasonEpisodes){
-  if (!seasons || !seasons.length) return '';
-  const se = seasonEpisodes || {};
-  return seasons.map(n => {
-    const c = se[n];
-    return (c !== undefined && c !== null) ? `${n}:${c}` : `${n}`;
-  }).join(', ');
+/* NEW: extract explicit total-episode count from a cast entry.
+   Returns null when not set (so UI can fall back to summing the season episodes). */
+function getExplicitTotalEpisodes(castEntry){
+  if (!castEntry) return null;
+  if (castEntry.totalEpisodes !== undefined && castEntry.totalEpisodes !== null && castEntry.totalEpisodes !== ''){
+    const n = parseInt(castEntry.totalEpisodes, 10);
+    if (!isNaN(n) && n >= 0) return n;
+  }
+  /* Legacy fallback: sum per-season counts if that old format exists */
+  if (castEntry.seasonEpisodes && Object.keys(castEntry.seasonEpisodes).length){
+    const sum = Object.values(castEntry.seasonEpisodes)
+      .reduce((acc, v) => acc + (Number(v) || 0), 0);
+    if (sum > 0) return sum;
+  }
+  return null;
 }
 
-/* NEW: counts episodes per-seasons, honoring explicit per-season counts */
+/* NEW: "X sezona · Y epizoda" display string for a cast entry.
+   Uses explicit totalEpisodes when set; otherwise sums full episodes of the listed seasons. */
 function seasonsEpisodesMeta(c){
   const t = c.title;
   if (t.type !== 'series') return '';
   const allSeasons = t.seasons || [];
   const castSeasons = c.seasons || [];
-  const seasonEpisodes = c.seasonEpisodes || {};
-  let seasonsCount = 0, episodesCount = 0;
+
+  let seasonsCount = 0;
+  let episodesCount = 0;
+
   if (castSeasons.length){
     seasonsCount = castSeasons.length;
-    castSeasons.forEach(num => {
-      const explicit = seasonEpisodes[num];
-      if (explicit !== undefined && explicit !== null){
-        episodesCount += Number(explicit) || 0;
-      } else {
+    const explicit = getExplicitTotalEpisodes(c);
+    if (explicit !== null){
+      episodesCount = explicit;
+    } else {
+      castSeasons.forEach(num => {
         const s = allSeasons.find(x => Number(x.number) === Number(num));
         if (s) episodesCount += (s.episodes || []).length;
-      }
-    });
+      });
+    }
   } else {
     seasonsCount = allSeasons.length;
     episodesCount = allSeasons.reduce((sum, s) => sum + (s.episodes || []).length, 0);
   }
+
   if (!seasonsCount) return '';
   const sLabel = seasonsCount + ' ' + pluralSezona(seasonsCount);
   if (!episodesCount) return sLabel;
@@ -1399,7 +1405,8 @@ function filmographyFor(personId){
     if (ce) acting.push({
       title:t, character:ce.character, role:ce.role,
       seasons: ce.seasons || [],
-      seasonEpisodes: ce.seasonEpisodes || {}
+      seasonEpisodes: ce.seasonEpisodes || {},
+      totalEpisodes: ce.totalEpisodes
     });
     if ((t.directors || []).some(d => String(d) === String(personId))) directing.push({ title:t });
     if ((t.screenwriters || []).some(s => String(s) === String(personId))) writing.push({ title:t });
@@ -1773,7 +1780,7 @@ function renderPeopleGrid(){
 }
 
 /* ============================================================
-   11. PERSON DETAIL — with death info + series meta
+   11. PERSON DETAIL
    ============================================================ */
 function viewPerson(id){
   const p = getPerson(id);
@@ -1859,7 +1866,7 @@ function viewPerson(id){
 }
 
 /* ============================================================
-   12. TITLE DETAIL — series seasons in hero sidebar
+   12. TITLE DETAIL
    ============================================================ */
 function renderSeasonsPanel(t){
   if (!t.seasons || !t.seasons.length){
@@ -2247,16 +2254,20 @@ async function applyPendingImageToKey(pending, key){
 }
 
 /* ============================================================
-   18. CAST EDITOR — with per-season episode counts
+   18. CAST EDITOR — seasons list + total episodes
    ============================================================ */
-function castRowMarkup(name, character, role, seasons, seasonEpisodes, isSeries){
-  const seasonsValue = formatSeasonsForInput(seasons || [], seasonEpisodes || {});
+function castRowMarkup(name, character, role, seasons, totalEpisodes, isSeries){
+  const seasonsValue = (seasons || []).join(', ');
+  const totalValue = (totalEpisodes !== null && totalEpisodes !== undefined) ? String(totalEpisodes) : '';
   return `
     <div class="cast-item${isSeries ? ' is-series' : ''}" data-cast-item>
       <input class="inp cast-name" placeholder="Ime glumca" value="${esc(name || '')}">
       <input class="inp cast-character" placeholder="Lik" value="${esc(character || '')}">
       <input type="hidden" class="cast-role" value="${esc(role || '')}">
-      ${isSeries ? `<input class="inp cast-seasons" placeholder="Sezone (npr. 1:5, 2:8, 3)" value="${esc(seasonsValue)}">` : ''}
+      ${isSeries ? `
+        <input class="inp cast-seasons" placeholder="Sezone (npr. 1, 2, 3)" value="${esc(seasonsValue)}">
+        <input class="inp cast-episodes" type="number" min="0" placeholder="Ukupno ep." value="${esc(totalValue)}">
+      ` : ''}
       <button type="button" class="btn bare" data-remove-cast title="Ukloni">&#10005;</button>
     </div>`;
 }
@@ -2268,7 +2279,7 @@ function bindCastEditor(form, isSeries){
 
   addBtn.addEventListener('click', () => {
     const tmp = document.createElement('div');
-    tmp.innerHTML = castRowMarkup('', '', '', [], {}, isSeries).trim();
+    tmp.innerHTML = castRowMarkup('', '', '', [], null, isSeries).trim();
     editor.appendChild(tmp.firstChild);
   });
 
@@ -2284,14 +2295,23 @@ function readCast(form){
   const items = [...form.querySelectorAll('[data-cast-item]')];
   return items.map(item => {
     const seasonsEl = item.querySelector('.cast-seasons');
-    const parsed = seasonsEl ? parseSeasons(seasonsEl.value) : { seasons: [], seasonEpisodes: {} };
+    const episodesEl = item.querySelector('.cast-episodes');
+    const seasons = seasonsEl ? parseSeasons(seasonsEl.value) : [];
+    let totalEpisodes = null;
+    if (episodesEl){
+      const raw = episodesEl.value.trim();
+      if (raw !== ''){
+        const n = parseInt(raw, 10);
+        if (!isNaN(n) && n >= 0) totalEpisodes = n;
+      }
+    }
     const roleEl = item.querySelector('.cast-role');
     return {
       name: (item.querySelector('.cast-name').value || '').trim(),
       character: (item.querySelector('.cast-character').value || '').trim(),
       role: roleEl ? (roleEl.value || '') : '',
-      seasons: parsed.seasons,
-      seasonEpisodes: parsed.seasonEpisodes
+      seasons,
+      totalEpisodes
     };
   }).filter(c => c.name);
 }
@@ -2381,7 +2401,7 @@ function readSeasons(form){
 }
 
 /* ============================================================
-   20. PERSON FORM — with death info
+   20. PERSON FORM
    ============================================================ */
 function openPersonForm(id){
   const p = id ? getPerson(id) : null;
@@ -2484,7 +2504,7 @@ function openPersonForm(id){
 }
 
 /* ============================================================
-   21. TITLE FORM — with per-season episode counts
+   21. TITLE FORM
    ============================================================ */
 function openTitleForm(id, presetType){
   const t = id ? getTitle(id) : null;
@@ -2498,7 +2518,14 @@ function openTitleForm(id, presetType){
 
   const castRowsHtml = (t ? (t.cast || []) : []).map(c => {
     const p = getPerson(c.personId);
-    return castRowMarkup(p ? p.name : '', c.character, c.role, c.seasons || [], c.seasonEpisodes || {}, isSeries);
+    return castRowMarkup(
+      p ? p.name : '',
+      c.character,
+      c.role,
+      c.seasons || [],
+      getExplicitTotalEpisodes(c),
+      isSeries
+    );
   }).join('');
 
   const seasonsHtml = isSeries
@@ -2559,7 +2586,7 @@ function openTitleForm(id, presetType){
       </div>
       <button type="button" class="btn tiny" data-add-cast style="margin-top:8px">+ Dodaj ulogu</button>
       <div class="hint">
-        Nepoznate osobe se automatski dodaju u bazu kao glumci.${isSeries ? ' Za serije: sezone u formatu <strong>1:5</strong> (sezona:broj epizoda), odvojeno zarezom — npr. <strong>1:5, 2:8, 3</strong> (sezona 3 bez broja = sve epizode).' : ''}
+        Nepoznate osobe se automatski dodaju u bazu kao glumci.${isSeries ? ' Za serije unesite <strong>sve sezone</strong> u kojima se glumac pojavljuje (npr. <strong>1, 2, 3</strong>) i <strong>ukupan broj epizoda</strong> kroz sve te sezone (npr. <strong>26</strong>).' : ''}
       </div>
     </div>
     ${isSeries ? `
@@ -2609,7 +2636,7 @@ function openTitleForm(id, presetType){
             personId: r.ids[0], character: item.character,
             role: item.role || '',
             seasons: isSeries ? item.seasons : [],
-            seasonEpisodes: isSeries ? item.seasonEpisodes : {}
+            totalEpisodes: (isSeries && item.totalEpisodes !== null) ? item.totalEpisodes : undefined
           });
           if (r.created.length) castCreated.push(...r.created);
         }
@@ -2654,7 +2681,7 @@ function openTitleForm(id, presetType){
 }
 
 /* ============================================================
-   22. CREDIT FORMS — with per-season episode counts
+   22. CREDIT FORMS
    ============================================================ */
 function openCreditForm(titleId){
   const t = getTitle(titleId);
@@ -2679,11 +2706,18 @@ function openCreditForm(titleId){
       <input class="inp" name="character" placeholder="npr. Brka">
     </label>
     ${isSeries ? `
-      <label class="field">
-        <span class="lab">Sezone</span>
-        <input class="inp" name="seasons" placeholder="npr. 1:5, 2:8, 3">
-        <div class="hint">Format <strong>sezona:broj epizoda</strong>, odvojeno zarezom. Bez broja = sve epizode te sezone.</div>
-      </label>
+      <div class="row-2">
+        <label class="field">
+          <span class="lab">Sezone</span>
+          <input class="inp" name="seasons" placeholder="npr. 1, 2, 3">
+          <div class="hint">Sve sezone u kojima se pojavljuje.</div>
+        </label>
+        <label class="field">
+          <span class="lab">Ukupno epizoda</span>
+          <input class="inp" name="totalEpisodes" type="number" min="0" placeholder="npr. 26">
+          <div class="hint">Ukupan broj kroz sve navedene sezone.</div>
+        </label>
+      </div>
     ` : ''}`;
 
   showModal({
@@ -2696,12 +2730,19 @@ function openCreditForm(titleId){
       if (t.cast.some(c => String(c.personId) === String(pid))){
         toast('Ova osoba već ima ulogu', 'error'); return;
       }
-      const parsed = isSeries ? parseSeasons(d.get('seasons')) : { seasons: [], seasonEpisodes: {} };
+      let totalEpisodes;
+      if (isSeries){
+        const raw = String(d.get('totalEpisodes') || '').trim();
+        if (raw !== ''){
+          const n = parseInt(raw, 10);
+          if (!isNaN(n) && n >= 0) totalEpisodes = n;
+        }
+      }
       t.cast.push({
         personId: pid, character: String(d.get('character') || '').trim(),
         role: '',
-        seasons: parsed.seasons,
-        seasonEpisodes: parsed.seasonEpisodes
+        seasons: isSeries ? parseSeasons(d.get('seasons')) : [],
+        totalEpisodes
       });
       saveDB();
       closeModal();
@@ -2733,11 +2774,18 @@ function openCreditForPerson(personId){
       <input class="inp" name="character" placeholder="npr. Petar Petrović">
     </label>
     <div id="seasonsWrap" style="display:none">
-      <label class="field">
-        <span class="lab">Sezone</span>
-        <input class="inp" name="seasons" placeholder="npr. 1:5, 2:8, 3">
-        <div class="hint">Format <strong>sezona:broj epizoda</strong>, odvojeno zarezom. Bez broja = sve epizode te sezone.</div>
-      </label>
+      <div class="row-2">
+        <label class="field">
+          <span class="lab">Sezone</span>
+          <input class="inp" name="seasons" placeholder="npr. 1, 2, 3">
+          <div class="hint">Sve sezone u kojima se pojavljuje.</div>
+        </label>
+        <label class="field">
+          <span class="lab">Ukupno epizoda</span>
+          <input class="inp" name="totalEpisodes" type="number" min="0" placeholder="npr. 26">
+          <div class="hint">Ukupan broj kroz sve navedene sezone.</div>
+        </label>
+      </div>
     </div>`;
 
   showModal({
@@ -2763,12 +2811,19 @@ function openCreditForPerson(personId){
       if (t.cast.some(c => String(c.personId) === String(personId))){
         toast('Ova osoba već ima ulogu', 'error'); return;
       }
-      const parsed = t.type === 'series' ? parseSeasons(d.get('seasons')) : { seasons: [], seasonEpisodes: {} };
+      let totalEpisodes;
+      if (t.type === 'series'){
+        const raw = String(d.get('totalEpisodes') || '').trim();
+        if (raw !== ''){
+          const n = parseInt(raw, 10);
+          if (!isNaN(n) && n >= 0) totalEpisodes = n;
+        }
+      }
       t.cast.push({
         personId, character: String(d.get('character') || '').trim(),
         role: '',
-        seasons: parsed.seasons,
-        seasonEpisodes: parsed.seasonEpisodes
+        seasons: t.type === 'series' ? parseSeasons(d.get('seasons')) : [],
+        totalEpisodes
       });
       saveDB();
       closeModal();
