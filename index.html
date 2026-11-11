@@ -694,7 +694,6 @@ img{ display:block; max-width:100%; }
 }
 .cr-char b{ font-style:normal; font-weight:600; }
 
-/* ==== NEW: Cast grid (tile layout) ==== */
 .cast-grid{
   display:grid;
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
@@ -770,7 +769,6 @@ img{ display:block; max-width:100%; }
   margin-top: 18px;
 }
 
-/* Old cast row styles kept to avoid breaking anything else */
 .cast-row{
   display:grid; grid-template-columns:52px 1fr auto;
   gap:16px; align-items:center; padding:12px 2px;
@@ -1029,7 +1027,7 @@ img{ display:block; max-width:100%; }
 <footer class="site-foot">
   <div class="foot-inner">
     <div><b>Srpska filmska baza</b> &mdash; lična arhiva</div>
-    <div>Tekst: localStorage + IndexedDB rezerva &middot; Slike: IndexedDB</div>
+    <div>Tekst i slike: IndexedDB (bez praktičnog ograničenja)</div>
     <div>Izvoz / uvoz u JSON formatu</div>
   </div>
 </footer>
@@ -1110,7 +1108,8 @@ function toast(msg, type){
 function fmtBytes(b){
   if (!b || b < 1024) return (b || 0) + ' B';
   if (b < 1024*1024) return (b/1024).toFixed(1) + ' KB';
-  return (b/1024/1024).toFixed(2) + ' MB';
+  if (b < 1024*1024*1024) return (b/1024/1024).toFixed(2) + ' MB';
+  return (b/1024/1024/1024).toFixed(2) + ' GB';
 }
 function creditYearsLabel(c){
   const title = c.title;
@@ -1158,8 +1157,6 @@ function getExplicitTotalEpisodes(castEntry){
   return null;
 }
 
-/* NEW: compute episode count for a cast entry in a series title.
-   Priority: explicit totalEpisodes -> legacy seasonEpisodes sum -> sum of season episodes for the seasons they played in -> all seasons if none specified. */
 function computeCastEpisodes(c, title){
   if (!title || title.type !== 'series') return 0;
   const explicit = getExplicitTotalEpisodes(c);
@@ -1193,7 +1190,6 @@ const STORAGE_KEYS_FALLBACK = [
   'serbian_movie_db_v1'
 ];
 
-/* NEW: which title IDs have their cast section expanded (rest of cast visible) */
 const expandedCastTitles = new Set();
 
 let db = { people: [], titles: [], meta: { nextPersonId: 1, nextTitleId: 1, version: 3 } };
@@ -1209,11 +1205,21 @@ let currentRoute = { segments:[], params:new URLSearchParams() };
 let lastPath = null;
 
 /* ============================================================
-   3. INDEXEDDB — images + text backup
+   3. IndexedDB — PRIMARY storage for both images and text
+   ============================================================
+   Architecture:
+     - images:   Blobs, key = "title_<id>" / "person_<id>"
+     - data:     { json, savedAt } — the DB as serialized JSON (PRIMARY)
+     - backup:   { json, savedAt } — rolling copy, same content
+   localStorage is used ONLY as:
+     - optional synchronous cache (writes are best-effort, failures silent)
+     - migration source for data from older versions
    ============================================================ */
-const IMG_DB_NAME = 'srpska_baza_images_v3';
+const IDB_NAME = 'srpska_baza_images_v3';
 const IMG_STORE = 'images';
 const BACKUP_STORE = 'backup';
+const DATA_STORE = 'data';
+const DATA_KEY = 'main';
 const BACKUP_KEY = 'latest';
 let imageDBPromise = null;
 
@@ -1221,61 +1227,69 @@ function getImageDB(){
   if (imageDBPromise) return imageDBPromise;
   imageDBPromise = new Promise((resolve, reject) => {
     if (!window.indexedDB){ reject(new Error('IndexedDB nije dostupan.')); return; }
-    const req = indexedDB.open(IMG_DB_NAME, 2);
+    const req = indexedDB.open(IDB_NAME, 3);
     req.onupgradeneeded = () => {
       const idb = req.result;
       if (!idb.objectStoreNames.contains(IMG_STORE)) idb.createObjectStore(IMG_STORE);
       if (!idb.objectStoreNames.contains(BACKUP_STORE)) idb.createObjectStore(BACKUP_STORE);
+      if (!idb.objectStoreNames.contains(DATA_STORE)) idb.createObjectStore(DATA_STORE);
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
+    req.onblocked = () => reject(new Error('IndexedDB blocked by another tab'));
   });
   return imageDBPromise;
 }
 
-async function putImage(key, blob){
+/* Generic IDB helpers */
+async function idbGet(storeName, key){
   const idb = await getImageDB();
   return new Promise((res, rej) => {
-    const tx = idb.transaction(IMG_STORE, 'readwrite');
-    tx.objectStore(IMG_STORE).put(blob, key);
+    const tx = idb.transaction(storeName, 'readonly');
+    const req = tx.objectStore(storeName).get(key);
+    req.onsuccess = () => res(req.result || null);
+    req.onerror = () => rej(req.error);
+  });
+}
+async function idbPut(storeName, key, value){
+  const idb = await getImageDB();
+  return new Promise((res, rej) => {
+    const tx = idb.transaction(storeName, 'readwrite');
+    tx.objectStore(storeName).put(value, key);
     tx.oncomplete = () => res();
     tx.onerror = () => rej(tx.error);
     tx.onabort = () => rej(tx.error || new Error('Transaction aborted'));
   });
 }
-async function getImage(key){
+async function idbDelete(storeName, key){
   try{
     const idb = await getImageDB();
     return await new Promise((res, rej) => {
-      const tx = idb.transaction(IMG_STORE, 'readonly');
-      const req = tx.objectStore(IMG_STORE).get(key);
-      req.onsuccess = () => res(req.result || null);
-      req.onerror = () => rej(req.error);
-    });
-  }catch(e){ return null; }
-}
-async function deleteImage(key){
-  try{
-    const idb = await getImageDB();
-    return await new Promise((res, rej) => {
-      const tx = idb.transaction(IMG_STORE, 'readwrite');
-      tx.objectStore(IMG_STORE).delete(key);
+      const tx = idb.transaction(storeName, 'readwrite');
+      tx.objectStore(storeName).delete(key);
       tx.oncomplete = () => res();
       tx.onerror = () => rej(tx.error);
     });
   }catch(e){ /* ignore */ }
 }
-async function clearAllImages(){
+async function idbClear(storeName){
   try{
     const idb = await getImageDB();
     return await new Promise((res, rej) => {
-      const tx = idb.transaction(IMG_STORE, 'readwrite');
-      tx.objectStore(IMG_STORE).clear();
+      const tx = idb.transaction(storeName, 'readwrite');
+      tx.objectStore(storeName).clear();
       tx.oncomplete = () => res();
       tx.onerror = () => rej(tx.error);
     });
   }catch(e){ /* ignore */ }
 }
+
+/* Specific stores */
+async function putImage(key, blob){ return idbPut(IMG_STORE, key, blob); }
+async function getImage(key){ return idbGet(IMG_STORE, key); }
+async function deleteImage(key){ return idbDelete(IMG_STORE, key); }
+async function clearAllImages(){ return idbClear(IMG_STORE); }
+
 async function getImageKeys(){
   try{
     const idb = await getImageDB();
@@ -1287,6 +1301,7 @@ async function getImageKeys(){
     });
   }catch(e){ return new Set(); }
 }
+
 async function getImageStats(){
   const stats = { count:0, size:0, quota:0, usage:0 };
   try{
@@ -1313,30 +1328,6 @@ async function getImageStats(){
     });
   }catch(e){ /* ignore */ }
   return stats;
-}
-
-async function writeBackup(serialized){
-  try{
-    const idb = await getImageDB();
-    return new Promise((res, rej) => {
-      const tx = idb.transaction(BACKUP_STORE, 'readwrite');
-      tx.objectStore(BACKUP_STORE).put({ json: serialized, savedAt: Date.now() }, BACKUP_KEY);
-      tx.oncomplete = () => res();
-      tx.onerror = () => rej(tx.error);
-      tx.onabort = () => rej(tx.error || new Error('Backup aborted'));
-    });
-  }catch(e){ /* silent */ }
-}
-async function readBackup(){
-  try{
-    const idb = await getImageDB();
-    return await new Promise((res, rej) => {
-      const tx = idb.transaction(BACKUP_STORE, 'readonly');
-      const req = tx.objectStore(BACKUP_STORE).get(BACKUP_KEY);
-      req.onsuccess = () => res(req.result || null);
-      req.onerror = () => rej(req.error);
-    });
-  }catch(e){ return null; }
 }
 
 function loadImageFromFile(file){
@@ -1433,7 +1424,7 @@ async function applyImages(container){
 }
 
 /* ============================================================
-   4. STORAGE
+   4. TEXT STORAGE — IndexedDB primary, localStorage optional cache
    ============================================================ */
 let __forceEmptySave = false;
 let saveStatusEl = null;
@@ -1446,7 +1437,7 @@ function setSaveStatus(state){
   else if (state === 'error') saveStatusEl.classList.add('error');
   saveStatusEl.title =
     state === 'saving' ? 'Čuvanje…'
-    : state === 'error' ? 'Greška pri čuvanju! Podaci su u rezervi.'
+    : state === 'error' ? 'Greška pri čuvanju! Napravite izvoz.'
     : 'Sačuvano ' + new Date().toLocaleTimeString('sr-RS');
 }
 
@@ -1463,58 +1454,96 @@ function showPersistentBanner(text, type){
   root.appendChild(div);
 }
 
-function saveDB(){
+function isValidDB(p){
+  return p && Array.isArray(p.people) && Array.isArray(p.titles);
+}
+
+async function hasExistingData(){
+  /* Check IDB primary */
+  try{
+    const d = await idbGet(DATA_STORE, DATA_KEY);
+    if (d && d.json){
+      const p = JSON.parse(d.json);
+      if (isValidDB(p) && (p.people.length || p.titles.length)) return true;
+    }
+  }catch(e){}
+  /* Check IDB backup */
+  try{
+    const d = await idbGet(BACKUP_STORE, BACKUP_KEY);
+    if (d && d.json){
+      const p = JSON.parse(d.json);
+      if (isValidDB(p) && (p.people.length || p.titles.length)) return true;
+    }
+  }catch(e){}
+  /* Check localStorage cache */
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw){
+      const p = JSON.parse(raw);
+      if (isValidDB(p) && (p.people.length || p.titles.length)) return true;
+    }
+  }catch(e){}
+  return false;
+}
+
+/*
+  saveDB — writes to:
+    1. localStorage (best-effort, synchronous, errors silently ignored) — just a fast cache
+    2. IndexedDB `data` store (PRIMARY, awaited) — this is the real save
+    3. IndexedDB `backup` store (fire-and-forget) — rolling secondary copy
+  Returns true only if the IDB primary write succeeded.
+*/
+async function saveDB(){
   try{
     if (!__forceEmptySave && !db.people.length && !db.titles.length){
-      let existing = null;
-      try{ existing = localStorage.getItem(STORAGE_KEY); }catch(e){}
+      const existing = await hasExistingData();
       if (existing){
-        try{
-          const parsed = JSON.parse(existing);
-          if (parsed && ((parsed.people && parsed.people.length) || (parsed.titles && parsed.titles.length))){
-            console.warn('Safeguard: prevented overwriting existing data with empty DB');
-            return false;
-          }
-        }catch(e){}
+        console.warn('Safeguard: prevented overwriting existing data with empty DB');
+        return false;
       }
     }
 
     setSaveStatus('saving');
     const serialized = JSON.stringify(db);
 
-    writeBackup(serialized).catch(() => {});
+    /* 1. Sync localStorage write — cache only, ignore any errors */
+    try{ localStorage.setItem(STORAGE_KEY, serialized); }catch(e){ /* silent — IDB is primary */ }
 
-    let localStorageOK = false;
-    let localStorageError = null;
+    /* 2. Primary: IDB data store (awaited) */
+    let idbOK = false;
+    let idbError = null;
     try{
-      localStorage.setItem(STORAGE_KEY, serialized);
-      const verify = localStorage.getItem(STORAGE_KEY);
-      if (verify !== serialized){
-        throw new Error('Verifikacija nije uspela — podaci se razlikuju nakon upisa');
-      }
-      localStorageOK = true;
+      await idbPut(DATA_STORE, DATA_KEY, { json: serialized, savedAt: Date.now() });
+      idbOK = true;
     }catch(e){
-      localStorageError = e;
+      idbError = e;
+      console.error('IDB primary write failed:', e);
     }
 
-    if (localStorageOK){
+    /* 3. Backup: IDB backup store (fire-and-forget) */
+    if (idbOK){
+      idbPut(BACKUP_STORE, BACKUP_KEY, { json: serialized, savedAt: Date.now() }).catch(()=>{});
+    }
+
+    if (idbOK){
       setSaveStatus('ok');
       return true;
     }
 
+    /* Only if the primary storage (IDB) failed do we complain */
     setSaveStatus('error');
-    const isQuota = localStorageError && (
-      localStorageError.name === 'QuotaExceededError' ||
-      /quota/i.test(String(localStorageError.message || ''))
+    const isQuota = idbError && (
+      idbError.name === 'QuotaExceededError' ||
+      /quota/i.test(String(idbError.message || ''))
     );
     if (isQuota){
       showPersistentBanner(
-        'localStorage je pun! Podaci su ipak sačuvani u rezervnu kopiju (IndexedDB) i biće vraćeni pri sledećem otvaranju. Napravite IZVOZ (gore desno) da sačuvate trajno.',
+        'Nema dovoljno prostora za čuvanje. Napravite IZVOZ (gore desno) da preuzmete podatke, zatim obrišite neke stare unose ili slike.',
         'error'
       );
     } else {
       showPersistentBanner(
-        'Greška pri čuvanju: ' + (localStorageError && localStorageError.message || 'nepoznato') + '. Podaci su u rezervi (IndexedDB).',
+        'Greška pri čuvanju: ' + (idbError && idbError.message || 'nepoznato') + '. Napravite IZVOZ da sačuvate podatke trajno.',
         'error'
       );
     }
@@ -1526,9 +1555,9 @@ function saveDB(){
   }
 }
 
-function saveDBForce(){
+async function saveDBForce(){
   __forceEmptySave = true;
-  try{ return saveDB(); }
+  try{ return await saveDB(); }
   finally{ __forceEmptySave = false; }
 }
 
@@ -1537,7 +1566,7 @@ function _tryParseStorage(key){
     const raw = localStorage.getItem(key);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    if (!parsed || !Array.isArray(parsed.people) || !Array.isArray(parsed.titles)) return null;
+    if (!isValidDB(parsed)) return null;
     return parsed;
   }catch(e){
     console.error('Failed to parse storage key ' + key + ':', e);
@@ -1545,54 +1574,63 @@ function _tryParseStorage(key){
   }
 }
 
+/*
+  loadDB — tries in order:
+    1. IDB `data` store (primary — always correct after first new-code run)
+    2. localStorage cache (migration from older versions)
+    3. IDB `backup` store (last resort)
+    4. legacy localStorage keys (very old versions)
+  On successful load from a non-primary source, migrates the data to the primary.
+  Also cleans up legacy localStorage keys to free up space.
+*/
 async function loadDB(){
-  let loaded = _tryParseStorage(STORAGE_KEY);
-  let sourceKey = STORAGE_KEY;
-  let restoredFromBackup = false;
+  let loaded = null;
+  let sourceKey = null;
 
-  if (loaded && !loaded.people.length && !loaded.titles.length){
-    const backup = await readBackup();
-    if (backup && backup.json){
-      try{
-        const parsed = JSON.parse(backup.json);
-        if (parsed && Array.isArray(parsed.people) && Array.isArray(parsed.titles)){
-          if (parsed.people.length || parsed.titles.length){
-            console.log('Loaded empty primary but backup has data — using backup');
-            loaded = parsed;
-            sourceKey = 'backup';
-            restoredFromBackup = true;
-          }
-        }
-      }catch(e){}
+  /* 1. Primary: IDB data store */
+  try{
+    const d = await idbGet(DATA_STORE, DATA_KEY);
+    if (d && d.json){
+      const p = JSON.parse(d.json);
+      if (isValidDB(p)){
+        loaded = p;
+        sourceKey = 'idb-primary';
+      }
+    }
+  }catch(e){ console.error('IDB primary read failed:', e); }
+
+  /* 2. localStorage cache — migration from older versions of this app */
+  if (!loaded){
+    const p = _tryParseStorage(STORAGE_KEY);
+    if (p && (p.people.length || p.titles.length)){
+      loaded = p;
+      sourceKey = 'localStorage';
     }
   }
 
+  /* 3. IDB backup store — last-resort recovery */
+  if (!loaded){
+    try{
+      const d = await idbGet(BACKUP_STORE, BACKUP_KEY);
+      if (d && d.json){
+        const p = JSON.parse(d.json);
+        if (isValidDB(p) && (p.people.length || p.titles.length)){
+          loaded = p;
+          sourceKey = 'idb-backup';
+        }
+      }
+    }catch(e){ console.error('IDB backup read failed:', e); }
+  }
+
+  /* 4. Very old localStorage keys */
   if (!loaded){
     for (const k of STORAGE_KEYS_FALLBACK){
       const alt = _tryParseStorage(k);
-      if (alt){
+      if (alt && (alt.people.length || alt.titles.length)){
         loaded = alt;
         sourceKey = k;
-        console.log('Migrating data from older key: ' + k);
         break;
       }
-    }
-  }
-
-  if (!loaded){
-    const backup = await readBackup();
-    if (backup && backup.json){
-      try{
-        const parsed = JSON.parse(backup.json);
-        if (parsed && Array.isArray(parsed.people) && Array.isArray(parsed.titles)){
-          if (parsed.people.length || parsed.titles.length){
-            loaded = parsed;
-            sourceKey = 'backup';
-            restoredFromBackup = true;
-            console.log('Restored from IndexedDB backup');
-          }
-        }
-      }catch(e){}
     }
   }
 
@@ -1603,16 +1641,32 @@ async function loadDB(){
   if (!db.meta.nextPersonId) db.meta.nextPersonId = db.people.reduce((m,p) => Math.max(m, Number(p.id)||0), 0) + 1;
   if (!db.meta.nextTitleId) db.meta.nextTitleId = db.titles.reduce((m,t) => Math.max(m, Number(t.id)||0), 0) + 1;
 
-  if (restoredFromBackup){
+  /* Migrate to IDB primary if loaded from any secondary source */
+  if (sourceKey !== 'idb-primary'){
+    try{
+      await saveDBForce();
+      console.log('Migrated DB to IndexedDB primary from: ' + sourceKey);
+    }catch(e){
+      console.error('Migration to IDB failed:', e);
+    }
+  }
+
+  /* Free up legacy localStorage keys after successful migration */
+  for (const k of STORAGE_KEYS_FALLBACK){
+    if (k !== sourceKey){
+      try{ localStorage.removeItem(k); }catch(e){}
+    }
+  }
+
+  /* Inform user when we had to restore from a secondary source */
+  if (sourceKey === 'idb-backup' || sourceKey === 'localStorage' ||
+      STORAGE_KEYS_FALLBACK.includes(sourceKey)){
     setTimeout(() => {
       showPersistentBanner(
-        'Podaci su vraćeni iz rezervne kopije (localStorage je bio prazan ili nečitljiv). Napravite IZVOZ da ih sačuvate trajno.',
+        'Podaci su učitani iz rezervne lokacije i premešteni u glavno skladište (IndexedDB). Sve je u redu.',
         'info'
       );
     }, 300);
-  } else if (sourceKey !== STORAGE_KEY){
-    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); }catch(e){}
-    setTimeout(() => toast('Podaci su migrirani iz starije verzije baze', 'info'), 800);
   }
 
   return true;
@@ -1730,8 +1784,8 @@ function render(){
       el.innerHTML = `
         <div class="ledger-row"><div><div class="l-name">Sačuvanih slika</div></div><div class="l-count">${stats.count}</div></div>
         <div class="ledger-row"><div><div class="l-name">Veličina slika</div></div><div class="l-count">${fmtBytes(stats.size)}</div></div>
-        <div class="ledger-row"><div><div class="l-name">Iskorišćeno</div></div><div class="l-count">${fmtBytes(stats.usage)}</div></div>
-        <div class="ledger-row"><div><div class="l-name">Dostupno (procena)</div></div><div class="l-count">${stats.quota ? fmtBytes(stats.quota) : 'nepoznato'}</div></div>
+        <div class="ledger-row"><div><div class="l-name">Ukupno iskorišćeno</div></div><div class="l-count">${fmtBytes(stats.usage)}</div></div>
+        <div class="ledger-row"><div><div class="l-name">Dostupno u pregledaču</div></div><div class="l-count">${stats.quota ? fmtBytes(stats.quota) : 'nepoznato'}</div></div>
       `;
     }, 10);
   }
@@ -2121,7 +2175,6 @@ function renderSeasonsPanel(t){
   `;
 }
 
-/* NEW: cast tile markup for the grid */
 function castTileHtml(c, title, isSeries){
   const p = getPerson(c.personId);
   if (!p) return '';
@@ -2155,7 +2208,6 @@ function viewTitle(id){
 
   const isSeries = t.type === 'series';
 
-  /* NEW: clone cast, compute episode count for sorting (does not mutate stored data) */
   let cast = (t.cast || []).map(c => Object.assign({}, c));
   if (isSeries){
     cast.forEach(c => { c._episodes = computeCastEpisodes(c, t); });
@@ -2351,22 +2403,22 @@ function viewAbout(){
       Lična arhiva srpskih filmova, serija i glumaca. Podaci se čuvaju isključivo u vašem pregledaču.
       Klikom na osobu otvarate njenu filmografiju, a klikom na naslov kompletnu ekipu i (za serije) sezone sa epizodama.
       Slike se automatski kompresuju (WebP) i čuvaju u IndexedDB, tako da ostaju sačuvane i posle zatvaranja stranice.
-      Tekst se čuva u dva sloja: localStorage (primarno) + IndexedDB (rezerva).
     </p>
     <div class="ledger">
-      <div class="ledger-row"><div><div class="l-name">Tekstualni podaci</div></div><div class="l-count">localStorage + IndexedDB rezerva</div></div>
+      <div class="ledger-row"><div><div class="l-name">Glavno skladište podataka</div></div><div class="l-count">IndexedDB (praktično bez ograničenja)</div></div>
       <div class="ledger-row"><div><div class="l-name">Slike</div></div><div class="l-count">IndexedDB</div></div>
+      <div class="ledger-row"><div><div class="l-name">Rezervna kopija podataka</div></div><div class="l-count">IndexedDB (automatski)</div></div>
       <div class="ledger-row"><div><div class="l-name">Verzija baze</div></div><div class="l-count">${esc(db.meta.version || 3)}</div></div>
       <div class="ledger-row"><div><div class="l-name">Broj naslova</div></div><div class="l-count">${db.titles.length}</div></div>
       <div class="ledger-row"><div><div class="l-name">Broj osoba</div></div><div class="l-count">${db.people.length}</div></div>
       <div class="ledger-row"><div><div class="l-name">Veličina teksta</div></div><div class="l-count">${size} KB</div></div>
     </div>
-    ${secHead('01', 'Slike i prostor')}
+    ${secHead('01', 'Prostor u pregledaču')}
     <div class="ledger" id="storageInfo">
       <div class="ledger-row"><div><div class="l-name">Učitavam…</div></div><div class="l-count">—</div></div>
     </div>
     <div class="hint" style="margin-top:12px">
-      Slike se automatski smanjuju i kompresuju (WebP, ~50KB po slici).
+      IndexedDB koristi stotine MB do nekoliko GB, zavisno od slobodnog prostora na disku. Nema praktičnog ograničenja za ličnu arhivu filmova.
     </div>
     ${secHead('02', 'Upravljanje bazom')}
     <div class="btn-row">
@@ -2375,7 +2427,7 @@ function viewAbout(){
       <button class="btn" data-action="person-new">+ Dodaj osobu</button>
       <button class="btn" data-action="export">Izvoz JSON</button>
       <button class="btn" data-action="import">Uvoz JSON</button>
-      <button class="btn" data-action="restore-backup">Vrati iz rezerve (IndexedDB)</button>
+      <button class="btn" data-action="restore-backup">Vrati iz rezerve</button>
       <button class="btn outline-red" data-action="clear">Obriši sve</button>
     </div>
     <div class="hint" style="margin-top:14px">
@@ -2518,7 +2570,7 @@ async function applyPendingImageToKey(pending, key){
   }catch(err){
     console.error(err);
     if (err && (err.name === 'QuotaExceededError' || /quota/i.test(String(err.message || '')))){
-      toast('Nema dovoljno prostora za sliku. Obrišite neke slike.', 'error');
+      toast('Nema dovoljno prostora za sliku.', 'error');
     } else {
       toast('Slika nije sačuvana: ' + (err && err.message ? err.message : 'greška'), 'error');
     }
@@ -2765,13 +2817,13 @@ function openPersonForm(id){
         targetId = newP.id;
       }
 
-      const textSaved = saveDB();
+      const textSaved = await saveDB();
       try{ await applyPendingImageToKey(pending, 'person_' + targetId); }catch(err){}
 
       if (textSaved){
         toast(p ? 'Osoba je ažurirana' : 'Osoba je dodata');
       } else {
-        toast('Podaci su sačuvani u rezervi — pogledajte obaveštenje gore.', 'error');
+        toast('Podaci nisu sačuvani. Napravite IZVOZ!', 'error');
       }
       if (pending.previewURL) try{ URL.revokeObjectURL(pending.previewURL); }catch(e){}
       closeModal();
@@ -2942,11 +2994,14 @@ function openTitleForm(id, presetType){
         targetId = newT.id;
       }
 
-      const textSaved = saveDB();
+      /* Save text FIRST — awaited IDB write guarantees persistence */
+      const textSaved = await saveDB();
+
+      /* Then handle image (can take a moment; text already safe) */
       try{ await applyPendingImageToKey(pending, 'title_' + targetId); }catch(err){}
 
       if (!textSaved){
-        toast('Podaci su sačuvani u rezervi — pogledajte obaveštenje gore.', 'error');
+        toast('Podaci nisu sačuvani. Napravite IZVOZ!', 'error');
       } else if (created.length){
         toast('Kreirano ' + created.length + ' novih osoba.', 'info');
       } else {
@@ -3024,7 +3079,7 @@ function openCreditForm(titleId){
         seasons: isSeries ? parseSeasons(d.get('seasons')) : [],
         totalEpisodes
       });
-      saveDB();
+      await saveDB();
       closeModal();
       toast('Uloga je dodata');
       render();
@@ -3105,7 +3160,7 @@ function openCreditForPerson(personId){
         seasons: t.type === 'series' ? parseSeasons(d.get('seasons')) : [],
         totalEpisodes
       });
-      saveDB();
+      await saveDB();
       closeModal();
       toast('Uloga je dodata');
       render();
@@ -3129,7 +3184,7 @@ async function deletePerson(id){
   });
 
   try{ await deleteImage('person_' + id); invalidateImageURL('person_' + id); }catch(e){}
-  saveDBForce();
+  await saveDBForce();
   toast('Osoba je obrisana');
   go('/people');
 }
@@ -3140,7 +3195,7 @@ async function deleteTitle(id){
   if (!window.confirm(`Obrisati naslov „${t.title}"?`)) return;
   db.titles = db.titles.filter(x => String(x.id) !== String(id));
   try{ await deleteImage('title_' + id); invalidateImageURL('title_' + id); }catch(e){}
-  saveDBForce();
+  await saveDBForce();
   toast('Naslov je obrisan');
   go('/films');
 }
@@ -3150,9 +3205,13 @@ function removeCredit(titleId, personId){
   if (!t || !t.cast) return;
   if (!window.confirm('Ukloniti ovu ulogu iz naslova?')) return;
   t.cast = t.cast.filter(c => String(c.personId) !== String(personId));
-  saveDB();
-  toast('Uloga je uklonjena');
-  render();
+  saveDB().then(() => {
+    toast('Uloga je uklonjena');
+    render();
+  }).catch(() => {
+    toast('Uloga je uklonjena iz prikaza — osvežite stranicu ako nestane', 'error');
+    render();
+  });
 }
 
 /* ============================================================
@@ -3233,7 +3292,7 @@ async function importDatabase(file){
       if (!db.meta) db.meta = { nextPersonId:1, nextTitleId:1, version:3 };
       if (!db.meta.nextPersonId) db.meta.nextPersonId = db.people.reduce((m,p) => Math.max(m, Number(p.id)||0), 0) + 1;
       if (!db.meta.nextTitleId) db.meta.nextTitleId = db.titles.reduce((m,t) => Math.max(m, Number(t.id)||0), 0) + 1;
-      saveDBForce();
+      await saveDBForce();
 
       await clearAllImages();
       imageURLs.forEach(e => { try{ URL.revokeObjectURL(e.url); }catch(err){} });
@@ -3264,7 +3323,7 @@ async function importDatabase(file){
 }
 
 async function restoreFromBackup(){
-  const backup = await readBackup();
+  const backup = await idbGet(BACKUP_STORE, BACKUP_KEY);
   if (!backup || !backup.json){
     toast('Nema rezervne kopije.', 'error');
     return;
@@ -3273,7 +3332,7 @@ async function restoreFromBackup(){
   if (!window.confirm(`Vratiti podatke iz rezervne kopije od ${when}? Trenutni podaci biće prepisani.`)) return;
   try{
     const parsed = JSON.parse(backup.json);
-    if (!parsed || !Array.isArray(parsed.people) || !Array.isArray(parsed.titles)){
+    if (!isValidDB(parsed)){
       toast('Rezervna kopija je neispravna.', 'error');
       return;
     }
@@ -3281,7 +3340,7 @@ async function restoreFromBackup(){
     if (!db.meta) db.meta = { nextPersonId:1, nextTitleId:1, version:3 };
     if (!db.meta.nextPersonId) db.meta.nextPersonId = db.people.reduce((m,p) => Math.max(m, Number(p.id)||0), 0) + 1;
     if (!db.meta.nextTitleId) db.meta.nextTitleId = db.titles.reduce((m,t) => Math.max(m, Number(t.id)||0), 0) + 1;
-    saveDBForce();
+    await saveDBForce();
     try{ await refreshKnownImageKeys(); }catch(e){}
     toast('Podaci su vraćeni iz rezervne kopije (' + db.titles.length + ' naslova, ' + db.people.length + ' osoba).');
     go('/');
@@ -3294,7 +3353,7 @@ async function restoreFromBackup(){
 async function clearDatabase(){
   if (!window.confirm('Obrisati SVE podatke i slike? Ne može se poništiti.')) return;
   db = { people: [], titles: [], meta: { nextPersonId: 1, nextTitleId: 1, version: 3 } };
-  saveDBForce();
+  await saveDBForce();
   try{
     await clearAllImages();
     imageURLs.forEach(e => { try{ URL.revokeObjectURL(e.url); }catch(err){} });
