@@ -1199,12 +1199,6 @@ let lastPath = null;
 
 /* ============================================================
    3. DEFINITIVE STORAGE — IndexedDB ONLY
-   ============================================================
-   One database: `srpska_baza`
-   Two stores:
-     - `kv`     → keyed records. Currently holds { key: 'db', value: <entire DB> }
-     - `images` → keyed blobs.  { key: 'title_5', value: Blob }
-   localStorage is read ONLY on first migration and never again.
    ============================================================ */
 const DB_NAME = 'srpska_baza';
 const DB_VERSION = 1;
@@ -1278,7 +1272,6 @@ async function idbClear(store){
   });
 }
 
-/* Image helpers */
 async function putImage(key, blob){ return idbPut(STORE_IMAGES, { key, value: blob }); }
 async function getImage(key){
   const rec = await idbGet(STORE_IMAGES, key);
@@ -1298,14 +1291,7 @@ async function getImageKeys(){
   }catch(e){ return new Set(); }
 }
 async function getImageStats(){
-  const stats = { count:0, size:0, quota:0, usage:0 };
-  try{
-    if (navigator.storage && navigator.storage.estimate){
-      const est = await navigator.storage.estimate();
-      stats.quota = est.quota || 0;
-      stats.usage = est.usage || 0;
-    }
-  }catch(e){ /* ignore */ }
+  const stats = { count:0, size:0 };
   try{
     const idb = await getDB();
     await new Promise((resolve) => {
@@ -1327,7 +1313,6 @@ async function getImageStats(){
   return stats;
 }
 
-/* Image compression (WebP) */
 function loadImageFromFile(file){
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
@@ -1417,7 +1402,7 @@ async function applyImages(container){
 }
 
 /* ============================================================
-   4. TEXT SAVE / LOAD — simple and definitive
+   4. TEXT SAVE / LOAD
    ============================================================ */
 let __forceEmptySave = false;
 let saveStatusEl = null;
@@ -1476,7 +1461,6 @@ async function loadFromPrimary(){
 
 async function saveDB(){
   try{
-    /* Guard: don't silently wipe an existing non-empty DB with an empty one */
     if (!__forceEmptySave && !db.people.length && !db.titles.length){
       const existing = await loadFromPrimary();
       if (existing && (existing.people.length || existing.titles.length)){
@@ -1512,7 +1496,6 @@ async function saveDBForce(){
   finally{ __forceEmptySave = false; }
 }
 
-/* ---- One-time migration from legacy storage ---- */
 async function migrationAlreadyDone(){
   try{
     const flag = await idbGet(STORE_KV, KV_MIGRATED);
@@ -1538,15 +1521,13 @@ function readLegacyTextFromLocalStorage(){
 }
 
 async function migrateLegacyImages(){
-  /* Copy images from the old DB (if it exists) into the new store.
-     Does NOT delete the old DB — that happens after successful text save. */
   try{
     let oldDbExists = false;
     if (indexedDB.databases){
       const dbs = await indexedDB.databases();
       oldDbExists = dbs.some(d => d.name === LEGACY_IMAGE_DB_NAME);
     } else {
-      oldDbExists = true; /* Try anyway — will fail gracefully */
+      oldDbExists = true;
     }
     if (!oldDbExists) return 0;
   }catch(e){ /* Fall through and try */ }
@@ -1594,7 +1575,6 @@ async function migrateLegacyImages(){
 }
 
 async function cleanupLegacyStorage(){
-  /* Called after successful migration save. Safe to run multiple times. */
   for (const key of LEGACY_LOCALSTORAGE_KEYS){
     try{ localStorage.removeItem(key); }catch(e){}
   }
@@ -1638,25 +1618,77 @@ function allGenres(){
   return Object.keys(set).sort((a,b) => a.localeCompare(b,'sr'));
 }
 
-function resolvePeople(names, defaultOccupation){
+async function promptDuplicateChoice(name) {
+  return new Promise((resolve) => {
+    const root = document.getElementById('modalRoot');
+    root.innerHTML = `
+      <div class="modal-backdrop">
+        <div class="modal" role="dialog" aria-modal="true" style="max-width: 500px;">
+          <div class="modal-head">
+            <h2>Slično ime pronađeno</h2>
+          </div>
+          <div class="modal-body">
+            <p class="lede" style="margin-bottom:20px;">Osoba sa imenom <strong>${esc(name)}</strong> već postoji u bazi.</p>
+            <p style="font-size:14px; color:var(--ink-2); line-height:1.6;">Da li želite da koristite tu postojeću osobu, ili da napravite potpuno novu osobu? (Koristite opciju "Napravi novu" ukoliko je to drugi glumac sa istim imenom).</p>
+          </div>
+          <div class="modal-foot" style="justify-content: space-between;">
+            <button type="button" class="btn" id="choiceExisting">Koristi postojeću</button>
+            <button type="button" class="btn solid" id="choiceNew">Napravi novu</button>
+          </div>
+        </div>
+      </div>`;
+    root.classList.add('open');
+
+    document.getElementById('choiceExisting').addEventListener('click', () => {
+      closeModal();
+      resolve('existing');
+    });
+    document.getElementById('choiceNew').addEventListener('click', () => {
+      closeModal();
+      resolve('new');
+    });
+  });
+}
+
+async function resolvePeople(names, defaultOccupation){
   const ids = [];
   const created = [];
-  names.forEach(rawName => {
+  
+  for (const rawName of names) {
     const name = String(rawName || '').trim();
-    if (!name) return;
+    if (!name) continue;
+
     const existing = db.people.find(p => p.name.toLowerCase() === name.toLowerCase());
-    if (existing){ ids.push(existing.id); return; }
+
+    if (existing) {
+      const choice = await promptDuplicateChoice(name);
+      if (choice === 'existing') {
+        ids.push(existing.id);
+        continue;
+      }
+    }
+
+    // Create new (either because no duplicate, or user chose 'new')
+    let uniqueName = name;
+    let counter = 1;
+    while (db.people.some(p => p.name.toLowerCase() === uniqueName.toLowerCase())) {
+      counter++;
+      uniqueName = name + ' (' + counter + ')';
+    }
+
     const newPerson = {
       id: db.meta.nextPersonId++,
-      name, birthDate: '', birthPlace: '',
+      name: uniqueName,
+      birthDate: '', birthPlace: '',
       deathDate: '', deathPlace: '',
       occupations: defaultOccupation ? [defaultOccupation] : [],
       bio: ''
     };
     db.people.push(newPerson);
     ids.push(newPerson.id);
-    created.push(name);
-  });
+    created.push(uniqueName);
+  }
+  
   return { ids, created };
 }
 
@@ -1717,11 +1749,12 @@ function render(){
       const el = document.getElementById('storageInfo');
       if (!el) return;
       const stats = await getImageStats();
+      const textSize = new Blob([JSON.stringify(db)]).size;
+      const totalAppSize = stats.size + textSize;
       el.innerHTML = `
-        <div class="ledger-row"><div><div class="l-name">Sačuvanih slika</div></div><div class="l-count">${stats.count}</div></div>
-        <div class="ledger-row"><div><div class="l-name">Veličina slika</div></div><div class="l-count">${fmtBytes(stats.size)}</div></div>
-        <div class="ledger-row"><div><div class="l-name">Ukupno iskorišćeno u pregledaču</div></div><div class="l-count">${fmtBytes(stats.usage)}</div></div>
-        <div class="ledger-row"><div><div class="l-name">Dostupno u pregledaču</div></div><div class="l-count">${stats.quota ? fmtBytes(stats.quota) : 'nepoznato'}</div></div>
+        <div class="ledger-row"><div><div class="l-name">Tekstualni podaci</div></div><div class="l-count">${fmtBytes(textSize)}</div></div>
+        <div class="ledger-row"><div><div class="l-name">Slike (${stats.count} komada)</div></div><div class="l-count">${fmtBytes(stats.size)}</div></div>
+        <div class="ledger-row" style="background:rgba(0,0,0,.05); font-weight:bold;"><div><div class="l-name">UKUPNO ZA OVU BAZU</div></div><div class="l-count" style="color:var(--ink);">${fmtBytes(totalAppSize)}</div></div>
       `;
     }, 10);
   }
@@ -2330,7 +2363,6 @@ function viewStats(){
    15. ABOUT
    ============================================================ */
 function viewAbout(){
-  const size = Math.round(JSON.stringify(db).length / 1024);
   return `
     <div class="page-head">
       <div><h1>O bazi</h1><div class="sub">Kako arhiva funkcioniše</div></div>
@@ -2340,19 +2372,12 @@ function viewAbout(){
       Klikom na osobu otvarate njenu filmografiju, a klikom na naslov kompletnu ekipu i (za serije) sezone sa epizodama.
       Slike se automatski kompresuju u WebP i čuvaju u istom skladištu, tako da ostaju sačuvane i posle zatvaranja stranice.
     </p>
-    <div class="ledger">
-      <div class="ledger-row"><div><div class="l-name">Skladište</div></div><div class="l-count">IndexedDB (bez praktičnog ograničenja)</div></div>
-      <div class="ledger-row"><div><div class="l-name">Verzija baze</div></div><div class="l-count">${esc(db.meta.version || 4)}</div></div>
-      <div class="ledger-row"><div><div class="l-name">Broj naslova</div></div><div class="l-count">${db.titles.length}</div></div>
-      <div class="ledger-row"><div><div class="l-name">Broj osoba</div></div><div class="l-count">${db.people.length}</div></div>
-      <div class="ledger-row"><div><div class="l-name">Veličina teksta</div></div><div class="l-count">${size} KB</div></div>
-    </div>
     ${secHead('01', 'Prostor u pregledaču')}
     <div class="ledger" id="storageInfo">
       <div class="ledger-row"><div><div class="l-name">Učitavam…</div></div><div class="l-count">—</div></div>
     </div>
     <div class="hint" style="margin-top:12px">
-      IndexedDB koristi stotine MB do nekoliko GB, zavisno od slobodnog prostora na disku. Nema praktičnog ograničenja za ličnu arhivu filmova.
+      Ovo prikazuje tačnu veličinu samo za vašu bazu filmova. Vaš pregledač ima mnogo više prostora ukupno (obično nekoliko GB).
     </div>
     ${secHead('02', 'Upravljanje bazom')}
     <div class="btn-row">
@@ -2395,8 +2420,13 @@ function showModal(opts){
   root.classList.add('open');
 
   root.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeModal));
+  
+  // NOTE: Outside click is disabled to prevent accidental loss of progress.
+  // If you want to re-enable it, uncomment the lines below:
+  /*
   const backdrop = root.querySelector('[data-backdrop]');
   backdrop.addEventListener('click', e => { if (e.target === backdrop) closeModal(); });
+  */
 
   const form = document.getElementById('modalForm');
   form.addEventListener('submit', async (e) => {
@@ -2520,7 +2550,7 @@ function castRowMarkup(name, character, role, seasons, totalEpisodes, isSeries){
   const totalValue = (totalEpisodes !== null && totalEpisodes !== undefined) ? String(totalEpisodes) : '';
   return `
     <div class="cast-item${isSeries ? ' is-series' : ''}" data-cast-item>
-      <input class="inp cast-name" placeholder="Ime glumca" value="${esc(name || '')}">
+      <input class="inp cast-name" list="all-people-list" placeholder="Ime glumca" value="${esc(name || '')}">
       <input class="inp cast-character" placeholder="Lik" value="${esc(character || '')}">
       <input type="hidden" class="cast-role" value="${esc(role || '')}">
       ${isSeries ? `
@@ -2723,8 +2753,30 @@ function openPersonForm(id){
     onReady(){ bindImagePicker(pending); },
     async onSubmit(form){
       const d = new FormData(form);
-      const name = String(d.get('name') || '').trim();
+      let name = String(d.get('name') || '').trim();
       if (!name){ toast('Ime je obavezno', 'error'); return; }
+
+      const isDuplicate = db.people.some(x => x.id !== (p ? p.id : null) && x.name.toLowerCase() === name.toLowerCase());
+      
+      if (isDuplicate) {
+        const choice = await promptDuplicateChoice(name);
+        if (choice === 'existing') {
+          const existing = db.people.find(x => x.name.toLowerCase() === name.toLowerCase());
+          closeModal();
+          go('/person/' + existing.id);
+          toast('Preusmereni ste na postojeću osobu.', 'info');
+          return; 
+        } else {
+          let counter = 1;
+          let uniqueName = name;
+          while (db.people.some(x => x.name.toLowerCase() === uniqueName.toLowerCase())) {
+            counter++;
+            uniqueName = name + ' (' + counter + ')';
+          }
+          name = uniqueName;
+        }
+      }
+
       const occupations = [...form.querySelectorAll('input[name=occ]:checked')].map(c => c.value);
 
       let targetId;
@@ -2795,7 +2847,14 @@ function openTitleForm(id, presetType){
     ? (t && t.seasons ? t.seasons : []).map(s => seasonBlockMarkup(s.number, s.episodes)).join('')
     : '';
 
+  const datalistHtml = `
+    <datalist id="all-people-list">
+      ${db.people.map(p => `<option value="${esc(p.name)}"></option>`).join('')}
+    </datalist>
+  `;
+
   const body = `
+    ${datalistHtml}
     <label class="field">
       <span class="lab">Naslov *</span>
       <input class="inp" name="title" required value="${esc(t ? t.title : '')}" placeholder="npr. Ko to tamo peva">
@@ -2886,14 +2945,15 @@ function openTitleForm(id, presetType){
       const screenwriterNames = splitNames(d.get('screenwriters'));
       const castItems = readCast(form);
 
-      const dirRes = resolvePeople(directorNames, 'Reditelj/ka');
-      const scrRes = resolvePeople(screenwriterNames, 'Scenarista');
+      const dirRes = await resolvePeople(directorNames, 'Reditelj/ka');
+      const scrRes = await resolvePeople(screenwriterNames, 'Scenarista');
       const created = [...dirRes.created, ...scrRes.created];
 
       const castResolved = [];
       const castCreated = [];
-      castItems.forEach(item => {
-        const r = resolvePeople([item.name], 'Glumac/ica');
+      
+      for (const item of castItems) {
+        const r = await resolvePeople([item.name], 'Glumac/ica');
         if (r.ids.length){
           castResolved.push({
             personId: r.ids[0], character: item.character,
@@ -2903,7 +2963,7 @@ function openTitleForm(id, presetType){
           });
           if (r.created.length) castCreated.push(...r.created);
         }
-      });
+      }
       created.push(...castCreated);
 
       const seasons = isSeries ? readSeasons(form) : [];
@@ -2928,10 +2988,8 @@ function openTitleForm(id, presetType){
         targetId = newT.id;
       }
 
-      /* Save text FIRST — awaited IDB write */
       const textSaved = await saveDB();
 
-      /* Then image (may take a moment; text already safe) */
       try{ await applyPendingImageToKey(pending, 'title_' + targetId); }catch(err){}
 
       if (!textSaved){
