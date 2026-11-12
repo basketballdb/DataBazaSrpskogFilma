@@ -670,9 +670,10 @@ img{ display:block; max-width:100%; }
 }
 .occ-chip.accent{ background:var(--ink); color:var(--paper); }
 
+/* ==== UPDATED: credit-row to support right-side episodes ==== */
 .rows{ border-top:1px solid var(--rule); }
 .credit-row{
-  display:grid; grid-template-columns:110px 1fr;
+  display:grid; grid-template-columns:110px 1fr auto;
   gap:18px; align-items:baseline; padding:13px 2px;
   border-bottom:1px solid var(--rule);
   transition:background .12s ease;
@@ -693,6 +694,16 @@ img{ display:block; max-width:100%; }
   color:var(--ink-2); margin-top:2px;
 }
 .cr-char b{ font-style:normal; font-weight:600; }
+.cr-episodes{
+  font-family:var(--font-mono);
+  font-size:11px;
+  color:var(--blue);
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  text-align:right;
+  white-space:nowrap;
+}
 
 .cast-grid{
   display:grid;
@@ -944,6 +955,7 @@ img{ display:block; max-width:100%; }
   .grid.people{ grid-template-columns:repeat(auto-fill, minmax(132px, 1fr)); gap:22px 14px; }
   .row-2, .row-3{ grid-template-columns:1fr; gap:0; }
   .credit-row{ grid-template-columns:90px 1fr; gap:12px; }
+  .credit-row .cr-episodes { grid-column: 2; text-align: left; margin-top: 4px; }
   .cr-year{ font-size:12.5px; }
   .cast-row{ grid-template-columns:44px 1fr; gap:12px; }
   .cast-row .cast-side{ grid-column:2; margin-top:6px; }
@@ -2050,14 +2062,21 @@ function viewPerson(id){
   const isDeceased = !!(p.deathDate || p.deathPlace);
   const nameHtml = esc(p.name) + (isDeceased ? '<span class="dagger">&dagger;</span>' : '');
 
-  const creditRow = c => `
-    <div class="credit-row">
-      <div class="cr-year">${esc(creditYearsLabel(c))}</div>
-      <div class="cr-main">
-        <a href="#/title/${c.title.id}">${esc(c.title.title)}</a>
-        ${c.character ? `<span class="cr-char">kao <b>${esc(c.character)}</b></span>` : ''}
-      </div>
-    </div>`;
+  /* UPDATED: credit row now shows episode count on the right side */
+  const creditRow = c => {
+    const isSeries = c.title.type === 'series';
+    const epCount = isSeries ? computeCastEpisodes(c, c.title) : 0;
+    const epHtml = (isSeries && epCount > 0) ? `<div class="cr-episodes">${epCount} ${pluralEpizoda(epCount)}</div>` : '';
+    return `
+      <div class="credit-row">
+        <div class="cr-year">${esc(creditYearsLabel(c))}</div>
+        <div class="cr-main">
+          <a href="#/title/${c.title.id}">${esc(c.title.title)}</a>
+          ${c.character ? `<span class="cr-char">kao <b>${esc(c.character)}</b></span>` : ''}
+        </div>
+        ${epHtml}
+      </div>`;
+  };
 
   const simpleRow = c => `
     <div class="credit-row">
@@ -2194,9 +2213,14 @@ function viewTitle(id){
   }
   const isExpanded = expandedCastTitles.has(String(t.id));
 
+  /* UPDATED: Added total episodes fact for series */
   const facts = [];
   facts.push(`<div class="fact"><dt>${t.type === 'film' ? 'Godina' : 'Period'}</dt><dd>${esc(yearsLabel(t))}</dd></div>`);
   if (t.type === 'film' && t.runtime) facts.push(`<div class="fact"><dt>Trajanje</dt><dd>${esc(t.runtime)} min</dd></div>`);
+  if (isSeries) {
+    const totalEps = (t.seasons || []).reduce((sum, s) => sum + (s.episodes || []).length, 0);
+    if (totalEps > 0) facts.push(`<div class="fact"><dt>Ukupno epizoda</dt><dd>${totalEps}</dd></div>`);
+  }
   if (t.rating) facts.push(`<div class="fact"><dt>Ocena</dt><dd>&#9733; ${Number(t.rating).toFixed(1)}</dd></div>`);
 
   const directorNames = (t.directors || []).map(pid => {
@@ -2421,8 +2445,7 @@ function showModal(opts){
 
   root.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeModal));
   
-  // NOTE: Outside click is disabled to prevent accidental loss of progress.
-  // If you want to re-enable it, uncomment the lines below:
+  // Outside click disabled to prevent accidental loss of progress.
   /*
   const backdrop = root.querySelector('[data-backdrop]');
   backdrop.addEventListener('click', e => { if (e.target === backdrop) closeModal(); });
