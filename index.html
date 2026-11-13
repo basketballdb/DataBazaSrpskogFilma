@@ -670,7 +670,29 @@ img{ display:block; max-width:100%; }
 }
 .occ-chip.accent{ background:var(--ink); color:var(--paper); }
 
-/* ==== UPDATED: credit-row to support right-side episodes ==== */
+/* NEW: Life dates styling */
+.life-dates {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 20px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--ink-2);
+}
+.life-line {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.life-sym {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  color: var(--ink);
+  width: 14px;
+  text-align: center;
+}
+
 .rows{ border-top:1px solid var(--rule); }
 .credit-row{
   display:grid; grid-template-columns:110px 1fr auto;
@@ -1142,6 +1164,28 @@ function creditYearsLabel(c){
   const sorted = [...c.seasons].sort((a, b) => a - b);
   if (sorted.length === 1) return 'Sezona ' + sorted[0];
   return 'Sezone ' + sorted[0] + '–' + sorted[sorted.length - 1];
+}
+
+/* NEW: Calculate age at death */
+function getAgeAtDeath(birthDateStr, deathDateStr){
+  if (!birthDateStr || !deathDateStr) return null;
+  const bd = String(birthDateStr).split('-');
+  const dd = String(deathDateStr).split('-');
+  if (bd.length === 3 && dd.length === 3) {
+    const bYear = parseInt(bd[0], 10);
+    const bMonth = parseInt(bd[1], 10);
+    const bDay = parseInt(bd[2], 10);
+    const dYear = parseInt(dd[0], 10);
+    const dMonth = parseInt(dd[1], 10);
+    const dDay = parseInt(dd[2], 10);
+    if (isNaN(bYear) || isNaN(dYear)) return null;
+    let age = dYear - bYear;
+    if (dMonth < bMonth || (dMonth === bMonth && dDay < bDay)) {
+      age--;
+    }
+    return age > 0 ? age : null;
+  }
+  return null;
 }
 
 function parseSeasons(str){
@@ -2053,16 +2097,35 @@ function viewPerson(id){
     `<span class="occ-chip accent">${esc(o)}</span>`).join('') || '<span class="occ-chip">Zanimanje nije uneto</span>';
 
   const facts = [];
-  if (p.birthDate) facts.push(`<div class="fact"><dt>Datum rođenja</dt><dd>${esc(fmtDate(p.birthDate))}</dd></div>`);
-  if (p.birthPlace) facts.push(`<div class="fact"><dt>Mesto rođenja</dt><dd>${esc(p.birthPlace)}</dd></div>`);
-  if (p.deathDate) facts.push(`<div class="fact"><dt>Datum smrti</dt><dd>${esc(fmtDate(p.deathDate))}</dd></div>`);
-  if (p.deathPlace) facts.push(`<div class="fact"><dt>Mesto smrti</dt><dd>${esc(p.deathPlace)}</dd></div>`);
   facts.push(`<div class="fact"><dt>Zapisa u bazi</dt><dd>${total}</dd></div>`);
 
   const isDeceased = !!(p.deathDate || p.deathPlace);
-  const nameHtml = esc(p.name) + (isDeceased ? '<span class="dagger">&dagger;</span>' : '');
+  
+  let ageStr = '';
+  if (p.deathDate && p.birthDate) {
+      const age = getAgeAtDeath(p.birthDate, p.deathDate);
+      if (age !== null) ageStr = ' (' + age + ')';
+  }
+  const nameHtml = esc(p.name) + (isDeceased ? `<span class="dagger">&dagger;${ageStr}</span>` : '');
 
-  /* UPDATED: credit row now shows episode count on the right side */
+  /* NEW: Build the life dates string */
+  const birthParts = [];
+  if (p.birthDate) birthParts.push(fmtDate(p.birthDate));
+  if (p.birthPlace) birthParts.push(p.birthPlace);
+  const birthStr = birthParts.join(' - ');
+
+  const deathParts = [];
+  if (p.deathDate) deathParts.push(fmtDate(p.deathDate));
+  if (p.deathPlace) deathParts.push(p.deathPlace);
+  const deathStr = deathParts.join(' - ');
+
+  const lifeDatesHtml = (birthStr || deathStr) ? `
+    <div class="life-dates">
+      ${birthStr ? `<div class="life-line"><span class="life-sym">*</span> ${esc(birthStr)}</div>` : ''}
+      ${deathStr ? `<div class="life-line"><span class="life-sym">†</span> ${esc(deathStr)}</div>` : ''}
+    </div>
+  ` : '';
+
   const creditRow = c => {
     const isSeries = c.title.type === 'series';
     const epCount = isSeries ? computeCastEpisodes(c, c.title) : 0;
@@ -2096,7 +2159,8 @@ function viewPerson(id){
         <div class="kicker">Osoba u arhivi</div>
         <h1>${nameHtml}</h1>
         <div class="occ-chips">${occChips}</div>
-        ${p.bio ? `<p class="lede" style="margin-bottom:6px">${esc(p.bio)}</p>` : ''}
+        ${lifeDatesHtml}
+        ${p.bio ? `<p class="lede" style="margin-bottom:16px">${esc(p.bio)}</p>` : ''}
         <div class="facts">${facts.join('')}</div>
         <div class="btn-row">
           <button class="btn" data-action="person-edit" data-id="${p.id}">Uredi osobu</button>
@@ -2202,9 +2266,10 @@ function viewTitle(id){
     cast.sort((a, b) => (b._episodes || 0) - (a._episodes || 0));
   }
 
-  const VISIBLE_CAST_LIMIT = 20;
+  /* NEW: Limit is 8 for movies, 20 for series */
+  const VISIBLE_CAST_LIMIT = isSeries ? 20 : 8;
   let visibleCast, hiddenCast;
-  if (isSeries && cast.length > VISIBLE_CAST_LIMIT){
+  if (cast.length > VISIBLE_CAST_LIMIT){
     visibleCast = cast.slice(0, VISIBLE_CAST_LIMIT);
     hiddenCast = cast.slice(VISIBLE_CAST_LIMIT);
   } else {
@@ -2213,7 +2278,6 @@ function viewTitle(id){
   }
   const isExpanded = expandedCastTitles.has(String(t.id));
 
-  /* UPDATED: Added total episodes fact for series */
   const facts = [];
   facts.push(`<div class="fact"><dt>${t.type === 'film' ? 'Godina' : 'Period'}</dt><dd>${esc(yearsLabel(t))}</dd></div>`);
   if (t.type === 'film' && t.runtime) facts.push(`<div class="fact"><dt>Trajanje</dt><dd>${esc(t.runtime)} min</dd></div>`);
